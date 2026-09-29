@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Emilio Rodea — Mechanical Engineer</title>
+<meta name="description" content="Emilio Rodea, mechanical engineering student at Cal Poly Pomona. Sheet-metal enclosures for defense hardware, a six-axis robot arm built from scratch, a GRBL mini CNC, and a carabiner taken from CAD to mold to market." />
+<meta property="og:title" content="Emilio Rodea — Mechanical Engineer" />
+<meta property="og:description" content="A portfolio rendered in liquid metal. Scroll, and the metal remembers what I've built." />
+<meta name="theme-color" content="#0a0806" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230a0806'/%3E%3Cdefs%3E%3CradialGradient id='g' cx='38%25' cy='34%25' r='72%25'%3E%3Cstop offset='0' stop-color='%23fff3cf'/%3E%3Cstop offset='.45' stop-color='%23e5a53a'/%3E%3Cstop offset='1' stop-color='%23713d0a'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='16' cy='16' r='9' fill='url(%23g)'/%3E%3Ccircle cx='12.6' cy='12.4' r='2.1' fill='%23fffdf3' opacity='.9'/%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<!-- ===== LOADER ===== -->
+<div class="loader" aria-hidden="true">
+  <div class="loader-n"><span>00</span><sup>% poured</sup></div>
+  <div class="loader-bar"><i></i></div>
+  <div class="loader-l"><span>Emilio Rodea · portfolio</span><span>compiling the alloy</span></div>
+</div>
+
+<!-- ===== WEBGL STAGE ===== -->
+<div id="stage">
+  <canvas id="gl" aria-hidden="true"></canvas>
+  <div id="fallback" aria-hidden="true"></div>
+</div>
+<div class="draft" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
+<div class="vign" aria-hidden="true"></div>
+
+<!-- CAD-style viewfinder that locks onto the formed object -->
+<div class="finder" id="finder" aria-hidden="true">
+  <span class="c tl"></span><span class="c tr"></span><span class="c bl"></span><span class="c br"></span>
+  <span class="ring"></span><span class="cross"></span>
+  <div class="f-tag"><b id="fFig">FIG. 01</b><span id="fName"></span></div>
+  <div class="f-dim"><span id="fDim"></span></div>
+  <div class="f-read" id="fRead"></div>
+</div>
+
+<div class="wellcursor" id="wellCursor" aria-hidden="true"></div>
+<div class="cur-label" id="curLabel" aria-hidden="true"></div>
+<svg class="hold-ring" id="holdRing" viewBox="0 0 74 74" aria-hidden="true"><circle cx="37" cy="37" r="35" /></svg>
+
+<div class="topfade" aria-hidden="true"></div>
+<header class="top">
+  <a class="brand" href="#top">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span class="brand-word"><b>RODEA</b><span class="brand-tag">ME · CPP</span></span><span class="sr"> Emilio Rodea, back to top</span>
+  </a>
+  <nav aria-label="primary">
+    <a href="#builds" data-nav="builds">Builds</a>
+    <a href="#record" data-nav="record">Record</a>
+    <a href="#toolkit" data-nav="toolkit">Toolkit</a>
+    <a href="#contact" data-nav="contact">Contact</a>
+    <a class="pill" href="assets/resume/Emilio_Rodea_Resume.pdf" target="_blank" rel="noopener">Résumé ↗</a>
+  </nav>
+</header>
+
+<!-- ===== HERO ===== -->
+<div class="wrap">
+<section class="hero" id="top" data-form="0" data-align="hero" data-mat="0">
+  <div class="eyebrow fade-up" style="transition-delay:.2s">
+    <span class="dot" aria-hidden="true"></span>
+    <span>Emilio Rodea · mechanical engineering · Cal Poly Pomona</span>
+    <span class="rule" aria-hidden="true"></span>
+  </div>
+  <h1 class="hero-title">
+    <span class="ln"><span>Ideas start</span></span>
+    <span class="ln"><span><em class="s">liquid.</em> I make</span></span>
+    <span class="ln"><span>them <b>hold a shape.</b></span></span>
+  </h1>
+  <p class="hero-sub fade-up">I design <b>sheet-metal enclosures for defense hardware</b>, build robots from an empty CAD file, and have taken a product from sketch to mold to paying customers. Scroll, and the metal remembers what I've made.</p>
+  <div class="hero-foot fade-up">
+    <a class="btn" href="#builds"><span class="g" aria-hidden="true"></span>See the builds</a>
+    <a class="btn" href="assets/resume/Emilio_Rodea_Resume.pdf" target="_blank" rel="noopener">Résumé
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M3 9l6-6M4 3h5v5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></a>
+    <span class="scrollcue">
+      <svg width="12" height="16" viewBox="0 0 12 16" fill="none" aria-hidden="true"><rect x="1" y="1" width="10" height="14" rx="5" stroke="currentColor"/><circle cx="6" cy="5" r="1.5" fill="currentColor"/></svg>
+      scroll to remember
+    </span>
+  </div>
+  <div class="hero-meta fade-up" aria-hidden="true"><span>B.S.M.E. <b>'28</b></span><span>Pomona, CA</span><span>34.06° N</span></div>
+</section>
+</div>
+
+<!-- ===== BUILD INDEX (visible inside § 02) ===== -->
+<nav class="rail" aria-label="Builds">
+  <a href="#b-carabiner"><b>01</b>Carabiner<i></i></a>
+  <a href="#b-arm"><b>02</b>6-DOF arm<i></i></a>
+  <a href="#b-cnc"><b>03</b>Mini CNC<i></i></a>
+  <a href="#b-shell"><b>04</b>Split shell<i></i></a>
+</nav>
+
+<!-- ===== MATERIAL HUD ===== -->
+<div class="hud">
+  <div class="hud-read" aria-hidden="true">
+    form · <b id="hudForm">liquid</b> · solidity <b id="hudLiq">0.00</b><br>
+    material · <b id="hudMat">molten gold</b><br>
+    <span id="hudFps">render · —</span>
+  </div>
+  <div class="mat-switch" role="group" aria-label="Choose the metal's material">
+    <button class="mat-dot m0" data-mat="0" aria-pressed="true" aria-label="Molten gold"><span></span></button>
+    <button class="mat-dot m1" data-mat="1" aria-pressed="false" aria-label="Liquid chrome"><span></span></button>
+    <button class="mat-dot m2" data-mat="2" aria-pressed="false" aria-label="Obsidian glass"><span></span></button>
+    <button class="mat-dot m3" data-mat="3" aria-pressed="false" aria-label="Anodized oil"><span></span></button>
+  </div>
+</div>
+
+<main class="doc">
+  <!-- § 01 PROFILE -->
+  <section class="panel plate" id="profile" data-form="0" data-align="center" data-mat="0">
+    <div class="sec-head reveal">
+      <span class="sec-num">§ 01 / profile</span>
+      <div>
+        <h2 class="sec-title">One engineer, working the whole loop from <b>sketch to shipped.</b></h2>
+        <p class="sec-lead">Mechanical engineering at Cal Poly Pomona, graduating May 2028. This summer I designed rugged enclosures at ZMicro against MIL-STD shock, vibration and EMI requirements. The rest of the year I build things that move, and I run two e-commerce brands that taught me what tooling really costs when it's your own money.</p>
+      </div>
+    </div>
+    <div class="props reveal">
+      <div class="prop"><span class="k">GPA</span><span class="v"><span data-count="3.51">3.51</span></span><span class="d">B.S. Mechanical Engineering, expected May 2028.</span></div>
+      <div class="prop"><span class="k">Internships</span><span class="v"><span data-count="3">3</span> <em>summers</em></span><span class="d">Mechanical design, project engineering, marketing.</span></div>
+      <div class="prop"><span class="k">Shop revenue</span><span class="v"><em>$</em><span data-count="40">40</span><em>K+</em></span><span class="d">Uniteds Trinkets on Etsy, including a carabiner I took through a mold.</span></div>
+      <div class="prop"><span class="k">Bid savings</span><span class="v"><em>$</em><span data-count="50">50</span><em>K+</em></span><span class="d">From competitive subcontractor analysis at Filanc.</span></div>
+    </div>
+  </section>
+
+  <!-- § 02 BUILDS — each chapter makes the metal remember a shape -->
+  <div id="builds">
+  <section class="chapter" id="b-carabiner" data-form="1" data-morph="progress" data-align="right" data-focal="2.45" data-mat="3" data-nav="builds"
+    data-fig="FIG. 01" data-name="Carabiner · live sketch" data-note="SolidWorks → mold → shipped">
+    <div class="stick">
+      <div class="copy reveal">
+        <span class="ch-no" aria-hidden="true">01</span>
+        <div class="ch-kicker"><span>§ 02 / builds · 01</span><span class="st">Uniteds Trinkets · shipped</span></div>
+        <h2 class="ch-title">A carabiner, taken from <em class="s">CAD</em> to <b>customers.</b></h2>
+        <p class="ch-lede">I modeled it in SolidWorks with draft, wall thickness and gate placement planned from the first sketch, so the mold vendor could quote it without a redesign. Then first-article review, corrections fed back into the tool, a production run, and a live listing.</p>
+        <dl class="mini">
+          <div><dt>Role</dt><dd>Designer and product owner</dd></div>
+          <div><dt>Process</dt><dd>SolidWorks → mold development → production</dd></div>
+          <div><dt>Market</dt><dd>Etsy lineup beside keychains and charms</dd></div>
+        </dl>
+        <div class="ch-foot">
+          <a class="btn" href="projects/carabiner.html"><span class="g" aria-hidden="true"></span>Open the build file</a>
+          <span class="hint"><span class="ptr">move to turn · <kbd>click</kbd> gate · <kbd>hold</kbd> melt</span></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="chapter" id="b-arm" data-form="2" data-morph="progress" data-align="right" data-focal="2.45" data-mat="1" data-nav="builds"
+    data-fig="FIG. 02" data-name="6-DOF arm · live sketch" data-note="L1 140 mm · L2 110 mm">
+    <div class="stick">
+      <div class="copy reveal">
+        <span class="ch-no" aria-hidden="true">02</span>
+        <div class="ch-kicker"><span>§ 02 / builds · 02</span><span class="live"><i></i>in progress</span></div>
+        <h2 class="ch-title">A six-axis arm that learns by <em class="s">watching.</em></h2>
+        <p class="ch-lede">Every link and joint housing is my own SolidWorks design, built around Feetech STS3215 serial-bus servos that report position. A hand-moved leader arm drives it in real time, and those sessions become training data for a LeRobot imitation-learning policy.</p>
+        <dl class="mini">
+          <div><dt>Actuation</dt><dd>6× STS3215 smart servos, position feedback</dd></div>
+          <div><dt>Fits</dt><dd>M3 heat-set inserts in 4.2 mm bores, +0.3–0.5 mm servo pockets</dd></div>
+          <div><dt>Stack</dt><dd>Python · PyTorch (CUDA) · LeRobot · WSL2</dd></div>
+        </dl>
+        <div class="ch-foot">
+          <a class="btn" href="projects/robotic-arm.html"><span class="g" aria-hidden="true"></span>Open the build file</a>
+          <span class="hint"><span class="ptr">it reaches for your cursor · <kbd>click</kbd> grip</span></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="chapter" id="b-cnc" data-form="3" data-morph="progress" data-align="right" data-focal="2.45" data-mat="0" data-nav="builds"
+    data-fig="FIG. 03" data-name="3-axis mini CNC · live sketch" data-note="Arduino · GRBL · G-code">
+    <div class="stick">
+      <div class="copy reveal">
+        <span class="ch-no" aria-hidden="true">03</span>
+        <div class="ch-kicker"><span>§ 02 / builds · 03</span><span class="st">personal · complete</span></div>
+        <h2 class="ch-title">A mini CNC, wired and tuned <b>by hand.</b></h2>
+        <p class="ch-lede">Three lead-screw axes on bearings, a wood frame, a 3D-printed spindle mount, and an Arduino running GRBL to turn G-code into coordinated motion. It's where my motion-control work started, and the stepping stone to the arm.</p>
+        <dl class="mini">
+          <div><dt>Motion</dt><dd>3 axes, lead screws with bearing supports</dd></div>
+          <div><dt>Control</dt><dd>Arduino + GRBL: steps/mm, limits, feeds, accel</dd></div>
+          <div><dt>Fab</dt><dd>Wood frame, printed spindle mount, hand wiring</dd></div>
+        </dl>
+        <div class="ch-foot">
+          <a class="btn" href="projects/mini-cnc.html"><span class="g" aria-hidden="true"></span>Open the build file</a>
+          <span class="hint"><span class="ptr">your cursor jogs X / Y · <kbd>click</kbd> plunge</span></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="chapter" id="b-shell" data-form="4" data-morph="progress" data-align="right" data-focal="2.45" data-mat="2" data-nav="builds"
+    data-fig="FIG. 04" data-name="Split-shell enclosure · illustrative" data-note="0.070&quot; 5052-H32 / 6061-T6">
+    <div class="stick">
+      <div class="copy reveal">
+        <span class="ch-no" aria-hidden="true">04</span>
+        <div class="ch-kicker"><span>§ 02 / builds · 04</span><span class="st">ZMicro · summer 2026</span></div>
+        <h2 class="ch-title">A split shell with <b>no seam screw.</b></h2>
+        <p class="ch-lede">A two-piece top shell for a ruggedized removable storage module. The seam had to hold itself together, survive military shock and vibration, keep EMI sealed, and still be easy for the sheet-metal shop to form.</p>
+        <dl class="mini">
+          <div><dt>Requirements</dt><dd>MIL-STD-461G EMI · MIL-STD-810G / DO-160G</dd></div>
+          <div><dt>Joints</dt><dd>J-return, shiplap, tongue-under-lip, hems, step-laps</dd></div>
+          <div><dt>Configs</dt><dd>One shell for M.2 2280 and 22110 SSDs</dd></div>
+        </dl>
+        <div class="ch-foot">
+          <a class="btn" href="projects/tp1-enclosure.html"><span class="g" aria-hidden="true"></span>Open the build file</a>
+          <span class="hint"><span class="ptr">move up to open the seam · <kbd>click</kbd> lock</span></span>
+        </div>
+      </div>
+    </div>
+  </section>
+  </div>
+
+  <!-- § 03 RECORD -->
+  <section class="panel plate" id="record" data-form="0" data-align="center" data-mat="0" data-nav="record">
+    <div class="sec-head reveal">
+      <span class="sec-num">§ 03 / record</span>
+      <div>
+        <h2 class="sec-title">Three summers, three <b>different shops.</b></h2>
+        <p class="sec-lead">Defense hardware, heavy construction, retail marketing. Different industries, same habit: check the drawing against what's really there.</p>
+      </div>
+    </div>
+    <div class="rec reveal">
+      <details open>
+        <summary><span class="when">Summer 2026<i>San Diego</i></span><span class="role">Mechanical Design Intern</span><span class="org">ZMicro · rugged computing for defense &amp; aerospace</span><span class="pm" aria-hidden="true"></span></summary>
+        <ul>
+          <li>Designed a <b>sheet-metal split-shell enclosure</b> for a ruggedized removable storage module using DFM/DFA principles, meeting MIL-STD-461G EMI and MIL-STD-810G / DO-160G shock and vibration requirements.</li>
+          <li>Designed and revised SolidWorks parts and assemblies for rugged LCD displays and servers: rear bezels, sheet-metal parts, fastener fit-ups, with <b>GD&amp;T-dimensioned drawings</b> and PDM vault management.</li>
+          <li>Ran root-cause failure analysis and thermal/power analysis, created ECOs for change control, and supported interface control documentation for customer programs.</li>
+          <li>Authored a technical brief proposing AI integration into change-order, design-verification, and PDM workflows.</li>
+        </ul>
+      </details>
+      <details>
+        <summary><span class="when">Summer 2025<i>Laguna Beach</i></span><span class="role">Project Engineer Intern</span><span class="org">Filanc Construction</span><span class="pm" aria-hidden="true"></span></summary>
+        <ul>
+          <li>Cross-checked elevations, layouts, and site conditions against shop drawings in AutoCAD.</li>
+          <li>Produced quantity take-offs, budget estimates, work packages, and QC procedures; processed submittals, RFIs, and change orders.</li>
+          <li>Solicited and evaluated subcontractor quotes, saving an estimated <b>$50K+</b> against initial estimates through competitive bid analysis and vendor negotiation.</li>
+        </ul>
+      </details>
+      <details>
+        <summary><span class="when">Summer 2024<i>San Diego</i></span><span class="role">Social Media Marketing Intern</span><span class="org">Road Runner Sports</span><span class="pm" aria-hidden="true"></span></summary>
+        <ul>
+          <li>Wrote copy and produced social content; analyzed and organized advertising data.</li>
+          <li>Led initiatives to bring AI-driven marketing strategies in, improving ad performance and engagement by <b>20%</b>.</li>
+        </ul>
+      </details>
+    </div>
+  </section>
+
+  <!-- § 04 VENTURES -->
+  <section class="panel plate" id="ventures" data-form="0" data-align="center" data-mat="0" data-nav="record">
+    <div class="sec-head reveal">
+      <span class="sec-num">§ 04 / ventures</span>
+      <div>
+        <h2 class="sec-title">Ecom Rodea LLC: where parts <b>meet customers.</b></h2>
+        <p class="sec-lead">Two brands run alongside school. They're where I learned to take a product from idea, to manufacturing, to someone's doorstep.</p>
+      </div>
+    </div>
+    <div class="cards">
+      <div class="card lift reveal">
+        <span class="swatch sw3"><b>ETSY</b></span>
+        <span class="tag">Etsy · June 2024 → present</span>
+        <h3>Uniteds Trinkets</h3>
+        <span class="big"><em>$</em>40<em>K+ revenue</em></span>
+        <p>Keychains, phone charms, earrings and digital wall art, grown through SEO, listing optimization and customer research. Includes the <a href="projects/carabiner.html">custom carabiner</a> I designed and took through mold development.</p>
+        <ul class="chips"><li>Product design</li><li>SEO</li><li>Consumer insights</li></ul>
+      </div>
+      <div class="card lift reveal d1">
+        <span class="swatch sw0"><b>FBA</b></span>
+        <span class="tag">Amazon FBA · April 2025 → present</span>
+        <h3>UniRodea</h3>
+        <span class="big">Home <em>décor · Amazon</em></span>
+        <p>A home-decor brand built with AI tools for concept creation, branding and positioning. Listings run on A+ content and SEO; I manage Amazon PPC and am testing Meta ads and AI-driven automation.</p>
+        <ul class="chips"><li>Branding</li><li>A+ content</li><li>Amazon PPC</li><li>AI workflows</li></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- § 05 TOOLKIT -->
+  <section class="panel plate" id="toolkit" data-form="0" data-align="center" data-mat="1" data-nav="toolkit" style="padding-left:0;padding-right:0">
+    <div class="sec-head reveal" style="padding:0 var(--gut)">
+      <span class="sec-num">§ 05 / toolkit</span>
+      <div><h2 class="sec-title">What I reach for, <b>by feel.</b></h2></div>
+    </div>
+    <div class="marquee" aria-hidden="true"><div class="mq-track">
+      <span>SolidWorks</span><i></i><span class="s-it">sheet metal</span><i></i><span>GD&amp;T</span><i></i><span class="s-it">DFM / DFA</span><i></i><span>PDM vault</span><i></i><span class="s-it">AutoCAD</span><i></i><span>MATLAB</span><i></i>
+      <span>SolidWorks</span><i></i><span class="s-it">sheet metal</span><i></i><span>GD&amp;T</span><i></i><span class="s-it">DFM / DFA</span><i></i><span>PDM vault</span><i></i><span class="s-it">AutoCAD</span><i></i><span>MATLAB</span><i></i>
+    </div></div>
+    <div class="marquee rev" aria-hidden="true"><div class="mq-track">
+      <span class="s-it">Arduino</span><i></i><span>GRBL · G-code</span><i></i><span class="s-it">serial-bus servos</span><i></i><span>FDM printing</span><i></i><span class="s-it">Python</span><i></i><span>PyTorch · LeRobot</span><i></i><span class="s-it">C / C++</span><i></i>
+      <span class="s-it">Arduino</span><i></i><span>GRBL · G-code</span><i></i><span class="s-it">serial-bus servos</span><i></i><span>FDM printing</span><i></i><span class="s-it">Python</span><i></i><span>PyTorch · LeRobot</span><i></i><span class="s-it">C / C++</span><i></i>
+    </div></div>
+    <div class="kit" style="padding:0 var(--gut)">
+      <div class="reveal"><h3>// design &amp; analysis</h3><ul class="chips"><li>SolidWorks</li><li>Sheet metal</li><li>GD&amp;T</li><li>DFM / DFA</li><li>AutoCAD</li><li>MATLAB</li><li>Bluebeam</li><li>Excel</li><li>PDM vault</li></ul></div>
+      <div class="reveal d1"><h3>// build &amp; control</h3><ul class="chips"><li>FDM 3D printing</li><li>Arduino</li><li>GRBL</li><li>G-code</li><li>Multi-axis motion</li><li>Serial-bus servos</li><li>C / C++</li><li>Python</li></ul></div>
+      <div class="reveal d2"><h3>// process &amp; other</h3><ul class="chips"><li>Lean manufacturing</li><li>ECOs / change control</li><li>Project management</li><li>Construction take-offs</li><li>PyTorch / LeRobot</li><li>Git</li><li>AI tooling</li></ul></div>
+    </div>
+  </section>
+
+  <!-- MANIFESTO -->
+  <section class="panel plate" data-form="0" data-align="center" data-mat="1">
+    <div class="two">
+      <div class="reveal">
+        <p class="manifesto">Most student CAD stops at a <em class="s">render.</em> Mine keeps going.</p>
+        <p class="manifesto-sub">Into a mold that a vendor quoted. Into a PDM vault a sheet-metal shop pulls from. Into a bus of servos that has to agree with a policy trained on my own demonstrations. The render is where the work starts.</p>
+      </div>
+      <div class="reveal d1">
+        <p class="mono-note">
+          <span class="lbl">// how this page is drawn</span><br>
+          Every object above is one fragment shader.<br>
+          Each pixel marches a ray through a signed<br>
+          distance field: capsules, cylinders, boxes<br>
+          and a pear-shaped loop, blended with a<br>
+          polynomial smooth-min. The liquid is six<br>
+          droplets and your cursor. The morph is just<br>
+          <b>mix(shape, liquid, t)</b>.<br>
+          <br>
+          <span class="lbl">// what that means</span><br>
+          The figures are <b>live sketches</b>, not CAD renders.<br>
+          The arm's IK, the CNC's feed rate and the<br>
+          gate's spring are simulated every frame.<br>
+          verts <b>0</b> · tris <b>1</b> · draw calls <b>1</b>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section class="panel plate" id="contact" data-form="0" data-align="center" data-mat="0" data-nav="contact">
+    <div class="cta reveal">
+      <h2>Let's build the <em class="s">next</em> <b>shape.</b></h2>
+      <p class="hero-sub">Open to mechanical design and robotics internships and co-ops for 2027. Fastest reply is email.</p>
+      <!-- TODO(Emilio): replace the three placeholder links below -->
+      <div class="cta-row">
+        <a class="btn solid" href="mailto:YOUR_EMAIL@example.com"><span class="g" aria-hidden="true"></span>Email me</a>
+        <a class="btn" href="https://www.linkedin.com/in/YOUR_HANDLE" target="_blank" rel="noopener">LinkedIn ↗</a>
+        <a class="btn" href="https://github.com/YOUR_HANDLE" target="_blank" rel="noopener">GitHub ↗</a>
+        <a class="btn" href="assets/resume/Emilio_Rodea_Resume.pdf" target="_blank" rel="noopener">Résumé PDF ↗</a>
+      </div>
+      <p class="fine">Pomona, CA · B.S. Mechanical Engineering, Cal Poly Pomona, May 2028</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <span>© <span data-year>2026</span> <b>Emilio Rodea</b></span>
+  <span>Raymarched liquid metal · one shader, zero meshes · press <b>1–4</b> to transmute</span>
+  <a href="#top">Back to top ↑</a>
+</footer>
+
+<script src="js/metal.js"></script>
+<script src="js/site.js"></script>
+</body>
+</html>

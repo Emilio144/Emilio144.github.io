@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>6-DOF Robotic Arm — Emilio Rodea</title>
+<meta name="description" content="A six-axis robotic arm designed from scratch in SolidWorks around Feetech STS3215 servos, built for leader/follower teleoperation and LeRobot imitation learning." />
+<meta property="og:title" content="6-DOF Robotic Arm — Emilio Rodea" />
+<meta property="og:description" content="A six-axis robotic arm designed from scratch in SolidWorks around Feetech STS3215 servos, built for leader/follower teleoperation and LeRobot imitation learning." />
+<meta name="theme-color" content="#0a0806" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230a0806'/%3E%3Cdefs%3E%3CradialGradient id='g' cx='38%25' cy='34%25' r='72%25'%3E%3Cstop offset='0' stop-color='%23fff3cf'/%3E%3Cstop offset='.45' stop-color='%23e5a53a'/%3E%3Cstop offset='1' stop-color='%23713d0a'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='16' cy='16' r='9' fill='url(%23g)'/%3E%3Ccircle cx='12.6' cy='12.4' r='2.1' fill='%23fffdf3' opacity='.9'/%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+<div id="stage">
+  <canvas id="gl" aria-hidden="true"></canvas>
+  <div id="fallback" aria-hidden="true"></div>
+</div>
+<div class="draft" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
+<div class="vign" aria-hidden="true"></div>
+<div class="finder" id="finder" aria-hidden="true">
+  <span class="c tl"></span><span class="c tr"></span><span class="c bl"></span><span class="c br"></span>
+  <span class="ring"></span><span class="cross"></span>
+  <div class="f-tag"><b id="fFig"></b><span id="fName"></span></div>
+  <div class="f-dim"><span id="fDim"></span></div>
+  <div class="f-read" id="fRead"></div>
+</div>
+<div class="wellcursor" id="wellCursor" aria-hidden="true"></div>
+<div class="cur-label" id="curLabel" aria-hidden="true"></div>
+<svg class="hold-ring" id="holdRing" viewBox="0 0 74 74" aria-hidden="true"><circle cx="37" cy="37" r="35" /></svg>
+
+<div class="topfade" aria-hidden="true"></div>
+<header class="top">
+  <a class="brand" href="../index.html">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span class="brand-word"><b>RODEA</b><span class="brand-tag">ME · CPP</span></span><span class="sr"> Emilio Rodea, home</span>
+  </a>
+  <nav aria-label="primary">
+    <a href="../index.html#builds" data-nav="builds" aria-current="true">Builds</a>
+    <a href="../index.html#record">Record</a>
+    <a href="../index.html#contact">Contact</a>
+    <a class="pill" href="../assets/resume/Emilio_Rodea_Resume.pdf" target="_blank" rel="noopener">Résumé ↗</a>
+  </nav>
+</header>
+
+<div class="wrap">
+<section class="phero" data-form="2" data-align="right" data-focal="2.35" data-mat="1"
+  data-fig="FIG. 02" data-name="6-DOF arm · live sketch" data-note="L1 140 mm · L2 110 mm">
+  <div class="copy">
+    <a class="back" href="../index.html#builds">← all builds</a>
+    <div class="eyebrow fade-up"><span class="dot" aria-hidden="true"></span><span>Personal project · 2026 → · in progress</span><span class="rule" aria-hidden="true"></span></div>
+    <h1><span class="ln"><span>A six-axis arm</span></span><span class="ln"><span>that learns by</span></span><span class="ln"><span><em class="s">watching.</em></span></span></h1>
+    <p class="lede fade-up">A robotic arm designed entirely from scratch in SolidWorks, built around smart serial-bus servos so a hand-moved leader arm can drive it in real time. Those sessions become training data for an imitation-learning policy.</p>
+    <dl class="mini fade-up"><div><dt>Role</dt><dd>Sole designer, builder, integrator</dd></div><div><dt>Mechanical</dt><dd>SolidWorks, FDM printing</dd></div><div><dt>Actuation</dt><dd>6× Feetech STS3215</dd></div><div><dt>Software</dt><dd>Python · PyTorch · LeRobot · WSL2</dd></div></dl>
+    <div class="ch-foot fade-up"><span class="hint"><span class="ptr">it reaches for your cursor · <kbd>click</kbd> grip · <kbd>hold</kbd> melt</span></span></div>
+  </div>
+</section>
+</div>
+
+<div class="hud">
+  <div class="hud-read" aria-hidden="true">
+    form · <b id="hudForm">liquid</b> · solidity <b id="hudLiq">0.00</b><br>
+    material · <b id="hudMat">molten gold</b><br>
+    <span id="hudFps">render · —</span>
+  </div>
+  <div class="mat-switch" role="group" aria-label="Choose the metal's material">
+    <button class="mat-dot m0" data-mat="0" aria-pressed="true" aria-label="Molten gold"><span></span></button>
+    <button class="mat-dot m1" data-mat="1" aria-pressed="false" aria-label="Liquid chrome"><span></span></button>
+    <button class="mat-dot m2" data-mat="2" aria-pressed="false" aria-label="Obsidian glass"><span></span></button>
+    <button class="mat-dot m3" data-mat="3" aria-pressed="false" aria-label="Anodized oil"><span></span></button>
+  </div>
+</div>
+<main class="doc">
+  <section class="panel plate-solid" data-form="0" data-align="center" data-dim="1" data-mat="1" >
+    <div class="sec-head reveal">
+      <span class="sec-num">§ 01 / why</span>
+      <div><h2 class="sec-title">Why build it <b>from scratch.</b></h2></div>
+    </div>
+    
+    <div class="two">
+      <div class="prose reveal">
+        <p>The SO-ARM100 / LeRobot ecosystem made low-cost imitation learning accessible, but I wanted full control over the geometry, tolerances and look of the arm rather than printing someone else's files. Designing every link and joint housing myself meant making real decisions about link lengths, servo pocket fits, fastening and printability, which is the experience I was after.</p>
+        <p>The end goal is not a replay machine. The policy should generalize a task, not repeat recorded joint angles. That drives two architectural choices: <b>servos with position feedback</b> for clean teleoperation, and <b>cameras</b> for perceptual context that joint angles alone can't give.</p>
+        <h2>How teleoperation works</h2>
+        <p>A <b>leader</b> arm is moved by hand. A <b>follower</b> arm mirrors it in real time by reading the leader's servo positions and commanding its own. Camera frames plus servo positions from each session are logged as a dataset, which trains a policy that maps what the camera sees to the next motor commands, so the arm can eventually do the task on its own.</p>
+      </div>
+      <div>
+        <figure class="fig reveal"><div class="frame" style="--ar:16/10"><img src="../assets/img/robotic-arm/hero.jpg" alt="Full-assembly CAD render, white + electric blue" data-hint="Full-assembly CAD render, white + electric blue" data-no="PL. 01" loading="lazy"></div><figcaption><b>PL. 01</b><span>Full arm assembly in SolidWorks. Every structural part is my own design, not an adapted kit.</span></figcaption></figure>
+        <figure class="fig reveal"><div class="frame" style="--ar:16/9"><img src="../assets/img/robotic-arm/teleop-diagram.png" alt="Diagram: leader → follower → camera + servo data → policy" data-hint="Diagram: leader → follower → camera + servo data → policy" data-no="PL. 02" loading="lazy"></div><figcaption><b>PL. 02</b><span>Leader/follower teleoperation and the data path into the policy.</span></figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel plate-solid" data-form="0" data-align="center" data-dim="1" data-mat="1" >
+    <div class="sec-head reveal">
+      <span class="sec-num">§ 02 / mechanical</span>
+      <div><h2 class="sec-title">Geometry, fits, and <b>fastening.</b></h2></div>
+    </div>
+    
+    <div class="two">
+      <div class="reveal">
+        <table class="kv">
+          <tr><th>Degrees of freedom</th><td>6: base yaw, shoulder, elbow, wrist pitch, wrist roll, gripper</td></tr>
+          <tr><th>Base</th><td>120–150 mm diameter with a bolt-down flange for stability under fast leader moves</td></tr>
+          <tr><th>Upper arm</th><td>140 mm</td></tr>
+          <tr><th>Forearm</th><td>110 mm, elbow to wrist</td></tr>
+          <tr><th>Servo pocket</th><td>+0.3–0.5 mm total clearance; the 4 mm rear pivot boss bored to 4.2 mm for a snug pivot</td></tr>
+          <tr><th>Fasteners</th><td>M3 throughout: 4.2 mm holes for brass heat-set inserts, 3.4 mm clearance in mating parts</td></tr>
+          <tr><th>Aesthetic</th><td>White and electric blue, capsule links, cylindrical joint housings, exposed servo horns</td></tr>
+          <tr><th>Fabrication</th><td>FDM 3D printing (slicer selection pending)</td></tr>
+        </table>
+      </div>
+      <div class="prose reveal d1">
+        <h3 style="margin-top:0">Servo choice was the key decision</h3>
+        <p>I chose <b>Feetech STS3215</b> serial-bus servos (19 kg·cm, 7.4 V) over cheaper hobby servos because they report position back over the bus. That feedback is what makes native motion mirroring possible. A simpler servo like the LX-16A would need custom Python drivers and doesn't return position cleanly, which would make the teleoperation loop fragile before any learning happens.</p>
+        <p>I have NEMA 17 steppers on hand for base rotation, but steppers complicate LeRobot integration (no absolute position without extra encoders), so they're used sparingly or not at all.</p>
+        <h3>CAD problems solved along the way</h3>
+        <ul>
+          <li><b>Chamfer asymmetry on angled faces.</b> SolidWorks measured the chamfer along the tilted face normal rather than symmetrically. Fixed by redefining the chamfer references so both legs measured from the intended edges.</li>
+          <li><b>Floating assembly component.</b> An under-defined part drifted off-screen in the assembly. Diagnosed the missing mates and reinserted it with a fully defined mate set.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="gallery" style="margin-top:44px">
+      <figure class="fig reveal"><div class="frame" style="--ar:4/3"><img src="../assets/img/robotic-arm/joint-housing.png" alt="CAD: joint housing, servo pocket section view" data-hint="CAD: joint housing, servo pocket section view" data-no="PL. 03" loading="lazy"></div><figcaption><b>PL. 03</b><span>Servo pocket and pivot boss fit.</span></figcaption></figure>
+      <figure class="fig reveal"><div class="frame" style="--ar:4/3"><img src="../assets/img/robotic-arm/link-detail.png" alt="CAD: capsule link with 4.2 mm insert holes" data-hint="CAD: capsule link with 4.2 mm insert holes" data-no="PL. 04" loading="lazy"></div><figcaption><b>PL. 04</b><span>Capsule link with heat-set insert bosses.</span></figcaption></figure>
+      <figure class="fig reveal"><div class="frame" style="--ar:4/3"><img src="../assets/img/robotic-arm/base.png" alt="CAD: base + bolt-down flange" data-hint="CAD: base + bolt-down flange" data-no="PL. 05" loading="lazy"></div><figcaption><b>PL. 05</b><span>Base and bolt-down flange.</span></figcaption></figure>
+      <figure class="fig reveal"><div class="frame" style="--ar:4/3"><img src="../assets/img/robotic-arm/servo.jpg" alt="Photo: STS3215 servo + driver board" data-hint="Photo: STS3215 servo + driver board" data-no="PL. 06" loading="lazy"></div><figcaption><b>PL. 06</b><span>STS3215 smart servo with its serial driver board.</span></figcaption></figure>
+    </div>
+  </section>
+
+  <section class="panel plate-solid" data-form="0" data-align="center" data-dim="1" data-mat="1" >
+    <div class="sec-head reveal">
+      <span class="sec-num">§ 03 / software</span>
+      <div><h2 class="sec-title">From hardware <b>to a policy.</b></h2><p class="sec-lead">The learning side runs in WSL2 rather than native Windows, since LeRobot and its dependencies are much happier on Linux. Servo IDs are assigned with Feetech's debug tool before the bus comes up in LeRobot.</p></div>
+    </div>
+    
+    <div class="two">
+      <div class="reveal">
+        <table class="kv">
+          <tr><th>Language</th><td>Python 3.10 / 3.11</td></tr>
+          <tr><th>Framework</th><td>LeRobot with the <code style="font-family:var(--mono);font-size:.86em">feetech</code> extra</td></tr>
+          <tr><th>Training</th><td>PyTorch with CUDA</td></tr>
+          <tr><th>Media</th><td>FFmpeg for camera capture and dataset encoding</td></tr>
+          <tr><th>Hosting</th><td>Hugging Face for datasets and checkpoints</td></tr>
+          <tr><th>Environment</th><td>WSL2, Git</td></tr>
+        </table>
+        <div class="callout"><b>Why cameras matter.</b> Servo angles tell the policy where the arm is, not where the object is. Camera input gives it scene context, so it can handle an object placed somewhere new. That's the whole point of learning instead of replaying.</div>
+      </div>
+      <div class="reveal d1">
+        <h3 class="sec-num" style="margin-bottom:14px">// roadmap</h3>
+        <ol class="steps">
+          <li class="done"><span><b>Architecture &amp; components.</b> Servos, control approach, software stack.</span><span class="st">done</span></li>
+          <li class="now"><span><b>Full arm CAD in SolidWorks.</b></span><span class="st">now</span></li>
+          <li><span><b>Slice and print all parts</b>, fit-check servos and inserts.</span><span class="st">next</span></li>
+          <li><span><b>Assign servo IDs</b> and validate the bus.</span><span class="st"></span></li>
+          <li><span><b>Stand up the environment</b> and integrate LeRobot.</span><span class="st"></span></li>
+          <li><span><b>Build a matching leader arm</b> for teleoperation.</span><span class="st"></span></li>
+          <li><span><b>Collect demonstrations</b> with cameras.</span><span class="st"></span></li>
+          <li><span><b>Train and evaluate</b> a first policy.</span><span class="st"></span></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="chapter" data-form="3" data-morph="progress" data-align="right" data-focal="2.45" data-mat="0" data-nav="builds"
+    data-fig="NEXT" data-name="3-Axis Mini CNC" data-note="personal · complete" style="min-height:170vh">
+    <div class="stick">
+      <div class="copy">
+        <div class="ch-kicker reveal"><span>next build</span><span class="st">the metal is already remembering it</span></div>
+        <h2 class="ch-title reveal">Keep <em class="s">going.</em></h2>
+        <div class="cards" style="margin-top:30px"><a class="card reveal" href="mini-cnc.html"><span class="swatch sw0"><b>03</b></span><span class="tag">personal · complete</span><h3>3-Axis Mini CNC</h3><p>Lead screws, GRBL and a printed spindle mount. Where the motion work started.</p><svg class="arrow" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 12L12 4M5 4h7v7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></a><a class="card reveal" href="tp1-enclosure.html"><span class="swatch sw2"><b>04</b></span><span class="tag">ZMicro · summer 2026</span><h3>Split-Shell Enclosure</h3><p>A sheet-metal seam that holds itself together under MIL-STD shock.</p><svg class="arrow" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 12L12 4M5 4h7v7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></a></div>
+      </div>
+    </div>
+  </section>
+</main>
+<footer>
+  <span>© <span data-year>2026</span> <b>Emilio Rodea</b></span>
+  <span>Figures are live raymarched sketches, not CAD · press <b>1–4</b> to transmute</span>
+  <a href="../index.html#builds">All builds ↑</a>
+</footer>
+<script src="../js/metal.js"></script>
+<script src="../js/site.js"></script>
+</body>
+</html>

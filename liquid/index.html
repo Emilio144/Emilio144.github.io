@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Emilio Rodea — Mechanical Engineer · Liquid Metal</title>
+<meta name="description" content="Emilio Rodea, mechanical engineering student at Cal Poly Pomona. A six-axis robot arm from scratch, a GRBL mini CNC, rugged sheet-metal enclosures for defense hardware, and a molded product that shipped. Rendered over a real-time raymarched liquid-metal field." />
+<meta property="og:title" content="Emilio Rodea — Mechanical Engineer" />
+<meta property="og:description" content="Design intent, poured into hardware. Robotics, motion control, sheet metal, DFM." />
+<meta name="theme-color" content="#0a0806" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230a0806'/%3E%3Cdefs%3E%3CradialGradient id='g' cx='38%25' cy='34%25' r='72%25'%3E%3Cstop offset='0' stop-color='%23fff3cf'/%3E%3Cstop offset='.45' stop-color='%23d9a441'/%3E%3Cstop offset='1' stop-color='%23713d0a'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='16' cy='16' r='9' fill='url(%23g)'/%3E%3Ccircle cx='12.6' cy='12.4' r='2.1' fill='%23fffdf3' opacity='.9'/%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Instrument+Sans:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+:root{
+  /* MOLTEN BRASS — default material palette (JS swaps these) */
+  --bg:#0a0806;
+  --bg-soft:#140f09;
+  --ink:#f3e9d6;
+  --ink-dim:#a99a80;
+  --ink-faint:#6c6151;
+  --accent:#d9a441;
+  --accent-2:#fff3cf;
+  --line:rgba(217,164,65,0.16);
+  --line-soft:rgba(217,164,65,0.09);
+  --glass:rgba(20,15,9,0.5);
+  --sel:rgba(217,164,65,0.28);
+  --edge:#241a0e;
+  --disp:"Syne",system-ui,sans-serif;
+  --body:"Instrument Sans",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,monospace;
+  --ease:cubic-bezier(.2,.9,.3,1);
+  --ease-soft:cubic-bezier(.2,.7,.2,1);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--body);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  overflow-x:hidden;
+  line-height:1.5;
+  transition:background .9s cubic-bezier(.4,0,.15,1),color .9s cubic-bezier(.4,0,.15,1);
+}
+::selection{background:var(--sel);color:var(--accent-2)}
+::-webkit-scrollbar{width:11px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--edge);border-radius:20px;border:3px solid var(--bg)}
+::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:1.5px solid var(--accent);outline-offset:3px;border-radius:2px}
+button{font:inherit;color:inherit}
+
+/* ============ WEBGL STAGE ============ */
+#stage{position:fixed;inset:0;z-index:0;background:var(--bg);transition:background .9s cubic-bezier(.4,0,.15,1)}
+#gl{display:block;width:100%;height:100%}
+#fallback{position:absolute;inset:0;display:none;
+  background:
+    radial-gradient(58% 62% at 40% 34%, var(--accent-2) 0%, var(--accent) 34%, var(--bg-soft) 74%, var(--bg) 100%),
+    radial-gradient(38% 40% at 68% 66%, rgba(255,243,207,.5), transparent 60%);
+  filter:contrast(1.1) saturate(1.1);
+}
+#fallback.on{display:block}
+.grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.06;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+.vign{position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:radial-gradient(130% 100% at 50% 42%, transparent 42%, rgba(0,0,0,.36) 100%);}
+
+/* ============ TOP BAR ============ */
+.wrap{position:relative;z-index:2}
+header.top{
+  position:fixed;top:0;left:0;right:0;z-index:20;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:22px clamp(20px,4vw,54px);
+  mix-blend-mode:difference;
+}
+.brand{display:flex;align-items:center;gap:12px;font-family:var(--disp);font-weight:700;letter-spacing:.02em}
+.brand-mark{width:22px;height:22px;border-radius:50%;position:relative;
+  background:radial-gradient(circle at 34% 30%, #fff, #bbb 40%, #444 100%);
+  box-shadow:inset -2px -3px 5px rgba(0,0,0,.6), inset 2px 2px 4px rgba(255,255,255,.5);}
+.brand-word{font-size:17px;letter-spacing:.12em;text-transform:uppercase}
+.brand-tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.22em;opacity:.7;text-transform:uppercase;margin-left:2px;font-weight:400}
+.top nav{display:flex;gap:26px;font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase}
+.top nav a{opacity:.85;transition:opacity .3s;position:relative}
+.top nav a::after{content:"";position:absolute;left:0;right:100%;bottom:-6px;height:1px;background:currentColor;transition:right .4s var(--ease)}
+.top nav a:hover{opacity:1}
+.top nav a:hover::after{right:0}
+@media(max-width:760px){.top nav{display:none}}
+
+/* ============ HERO ============ */
+.hero{min-height:100svh;display:flex;flex-direction:column;justify-content:flex-end;
+  padding:0 clamp(20px,4vw,54px) clamp(30px,4vh,48px);position:relative}
+.hero-eyebrow{display:flex;align-items:center;gap:14px;font-family:var(--mono);
+  font-size:11.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--accent);margin-bottom:22px;
+  text-shadow:0 1px 12px rgba(0,0,0,.55)}
+.hero-eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);
+  box-shadow:0 0 0 0 var(--accent);animation:pulse 2.6s cubic-bezier(.4,0,.2,1) infinite;flex:none}
+@keyframes pulse{0%{box-shadow:0 0 0 0 var(--accent)}70%{box-shadow:0 0 0 9px transparent}100%{box-shadow:0 0 0 0 transparent}}
+.hero-eyebrow .rule{flex:1;height:1px;background:var(--line);max-width:200px}
+.show-sm{display:none}
+@media(max-width:560px){.hide-sm{display:none}.show-sm{display:inline}.hero-eyebrow{font-size:10px;letter-spacing:.18em}}
+h1.hero-title{
+  font-family:var(--disp);
+  font-weight:400;
+  font-size:clamp(2.7rem,8.6vw,8rem);
+  line-height:.94;
+  letter-spacing:-.035em;
+  max-width:14ch;
+  text-wrap:balance;
+  text-shadow:0 2px 30px rgba(0,0,0,.35);
+}
+h1.hero-title b{font-weight:800;letter-spacing:-.045em}
+h1.hero-title em{font-style:normal;color:var(--accent);
+  background:linear-gradient(96deg,var(--accent),var(--accent-2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+.hero-sub{margin-top:26px;max-width:48ch;font-size:clamp(.98rem,1.5vw,1.16rem);color:var(--ink-dim);font-weight:400;text-shadow:0 1px 14px rgba(0,0,0,.5)}
+.hero-sub b{color:var(--ink);font-weight:500}
+.hero-foot{margin-top:32px;display:flex;flex-wrap:wrap;gap:14px 30px;align-items:center}
+.matterbtn{
+  display:inline-flex;align-items:center;gap:10px;
+  padding:13px 22px;border:1px solid var(--line);border-radius:40px;
+  font-family:var(--mono);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;
+  background:var(--glass);backdrop-filter:blur(8px);
+  transition:border-color .4s,transform .4s var(--ease),background .4s;cursor:pointer;color:var(--ink);will-change:transform}
+.matterbtn:hover{border-color:var(--accent)}
+.matterbtn .g{width:8px;height:8px;border-radius:50%;background:var(--accent)}
+.matterbtn.solid{background:var(--accent);color:#150d02;border-color:transparent;font-weight:700}
+.matterbtn.solid .g{background:#150d02}
+.scrollcue{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-faint);
+  display:flex;align-items:center;gap:8px}
+.scrollcue svg{animation:bob 2.2s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(4px)}}
+
+/* skills ticker along the hero base */
+.ticker{margin-top:clamp(26px,4vh,44px);border-top:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft);
+  overflow:hidden;white-space:nowrap;mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);-webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
+.ticker .track{display:inline-flex;gap:0;padding:11px 0;animation:tick 42s linear infinite;will-change:transform}
+.ticker span{font-family:var(--mono);font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-faint);padding:0 22px;position:relative}
+.ticker span::after{content:"";position:absolute;right:-3px;top:50%;width:5px;height:5px;border-radius:50%;background:var(--accent);opacity:.7;transform:translateY(-50%)}
+@keyframes tick{to{transform:translateX(-50%)}}
+.ticker:hover .track{animation-play-state:paused}
+
+/* material HUD (fixed) */
+.hud{position:fixed;right:clamp(16px,3vw,40px);bottom:clamp(16px,3vh,34px);z-index:15;
+  display:flex;flex-direction:column;align-items:flex-end;gap:12px;pointer-events:none;
+  transition:opacity .5s ease,transform .5s var(--ease)}
+.hud.tucked{opacity:0;transform:translateY(14px);pointer-events:none!important}
+.hud.tucked .mat-switch{pointer-events:none}
+.hud-read{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-faint);text-align:right;line-height:1.7;
+  padding:6px 11px;border-radius:8px;background:color-mix(in srgb,var(--bg) 55%,transparent);backdrop-filter:blur(6px)}
+@media(max-width:1000px){.hud-read{display:none}}
+.hud-read b{color:var(--accent);font-weight:400}
+.mat-switch{display:flex;gap:7px;pointer-events:auto;padding:7px;border:1px solid var(--line);border-radius:40px;background:var(--glass);backdrop-filter:blur(10px)}
+.mat-dot{width:26px;height:26px;border-radius:50%;border:1.5px solid transparent;cursor:pointer;position:relative;transition:transform .35s var(--ease),border-color .35s;padding:0;background:none}
+.mat-dot:hover{transform:scale(1.12)}
+.mat-dot[aria-pressed="true"]{border-color:var(--ink)}
+.mat-dot span{position:absolute;inset:3px;border-radius:50%}
+.mat-dot.m0 span{background:radial-gradient(circle at 34% 30%,#fff3cf,#d9a441 55%,#6b3d0a)}
+.mat-dot.m1 span{background:radial-gradient(circle at 34% 30%,#ffffff,#c9ced6 50%,#5b626c)}
+.mat-dot.m2 span{background:radial-gradient(circle at 34% 30%,#4c6bb5,#182a58 55%,#050818)}
+.mat-dot.m3 span{background:conic-gradient(from 20deg,#f0c060,#c46bb8,#5a7be6,#40c8b0,#f0c060)}
+@media(max-width:760px){
+  .hud{right:12px;bottom:12px;gap:8px}
+  .mat-switch{padding:5px;gap:5px}
+  .mat-dot{width:22px;height:22px}
+}
+
+/* ============ CONTENT SECTIONS ============ */
+main.doc{position:relative;z-index:2}
+section.panel{padding:clamp(72px,12vh,150px) clamp(20px,4vw,54px);position:relative}
+.reveal{opacity:0;transform:translateY(26px);transition:opacity 1s var(--ease-soft),transform 1s var(--ease-soft)}
+.reveal.in{opacity:1;transform:none}
+.plate{background:linear-gradient(180deg,transparent, color-mix(in srgb, var(--bg) 82%, transparent) 14%, color-mix(in srgb, var(--bg) 88%, transparent) 86%, transparent);
+  backdrop-filter:blur(2px)}
+
+.sec-head{display:grid;grid-template-columns:auto 1fr;gap:clamp(16px,3vw,44px);align-items:baseline;margin-bottom:clamp(34px,5vh,64px)}
+.sec-num{font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:var(--accent);white-space:nowrap}
+.sec-title{font-family:var(--disp);font-weight:400;font-size:clamp(1.9rem,4.6vw,3.4rem);line-height:1;letter-spacing:-.03em;max-width:22ch}
+.sec-title b{font-weight:800}
+.sec-lead{margin-top:20px;max-width:62ch;color:var(--ink-dim);font-size:clamp(1rem,1.4vw,1.14rem)}
+.sec-lead b{color:var(--ink);font-weight:500}
+@media(max-width:640px){.sec-head{grid-template-columns:1fr;gap:10px}}
+
+/* properties grid */
+.props{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1px;background:var(--line-soft);border:1px solid var(--line-soft);border-radius:4px;overflow:hidden}
+.prop{background:color-mix(in srgb,var(--bg) 92%,transparent);padding:28px 26px 30px;display:flex;flex-direction:column;gap:8px;transition:background .5s;position:relative;overflow:hidden}
+.prop::after{content:"";position:absolute;left:0;bottom:0;height:2px;width:0;background:var(--accent);transition:width .6s var(--ease)}
+.prop:hover{background:color-mix(in srgb,var(--bg-soft) 88%,transparent)}
+.prop:hover::after{width:100%}
+.prop .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-faint)}
+.prop .v{font-family:var(--disp);font-size:clamp(1.8rem,3.2vw,2.7rem);font-weight:500;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums}
+.prop .v em{font-style:normal;font-size:.5em;color:var(--ink-dim);letter-spacing:0;font-weight:400}
+.prop .d{font-size:.86rem;color:var(--ink-dim);margin-top:4px}
+
+/* ============ BUILDS (spec rows + floating plate) ============ */
+.spec{border-top:1px solid var(--line);margin-top:8px;position:relative}
+.spec-row{display:grid;grid-template-columns:56px 1.3fr 2fr auto;gap:clamp(12px,2.4vw,38px);align-items:baseline;
+  padding:26px 4px;border-bottom:1px solid var(--line-soft);transition:background .4s,padding-left .4s var(--ease);cursor:pointer;color:inherit}
+.spec-row:hover{background:color-mix(in srgb,var(--bg-soft) 60%,transparent);padding-left:14px}
+.spec-row .idx{font-family:var(--mono);font-size:11px;color:var(--accent)}
+.spec-row .name{font-family:var(--disp);font-size:clamp(1.15rem,1.9vw,1.55rem);font-weight:600;letter-spacing:-.02em;line-height:1.1}
+.spec-row .name small{display:block;font-family:var(--mono);font-weight:400;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-faint);margin-top:7px}
+.spec-row .desc{color:var(--ink-dim);font-size:.94rem}
+.spec-row .stat{font-family:var(--mono);font-size:11.5px;color:var(--ink-dim);white-space:nowrap;text-align:right;line-height:1.9}
+.spec-row .stat b{color:var(--accent);font-weight:400}
+.spec-row .arrow{display:inline-block;transition:transform .4s var(--ease);margin-left:6px}
+.spec-row:hover .arrow{transform:translateX(5px)}
+/* inline plate (mobile) */
+.spec-row .mini{display:none}
+@media(max-width:720px){
+  .spec-row{grid-template-columns:40px 1fr;gap:6px 14px}
+  .spec-row .desc{grid-column:2}
+  .spec-row .stat{grid-column:2;text-align:left;margin-top:2px}
+  .spec-row .mini{display:block;grid-column:2;margin-top:12px;border:1px solid var(--line-soft);border-radius:6px;padding:12px;background:color-mix(in srgb,var(--bg) 70%,transparent)}
+  .spec-row .mini svg{width:100%;height:auto;display:block}
+}
+
+/* floating technical plate that follows the cursor over a hovered row */
+.floatplate{position:fixed;z-index:14;left:0;top:0;width:min(380px,32vw);aspect-ratio:4/3;pointer-events:none;
+  border:1px solid var(--line);border-radius:8px;overflow:hidden;
+  background:color-mix(in srgb,var(--bg) 72%,transparent);backdrop-filter:blur(14px);
+  box-shadow:0 30px 80px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,255,255,.03);
+  opacity:0;transform:translate(-50%,-50%) scale(.92) rotate(-2deg);transition:opacity .35s ease,transform .5s var(--ease);will-change:transform}
+.floatplate.on{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(0deg)}
+.floatplate .pl{position:absolute;inset:0;padding:18px;opacity:0;transition:opacity .35s ease}
+.floatplate .pl.on{opacity:1}
+.floatplate svg{width:100%;height:100%;display:block}
+.floatplate .cap{position:absolute;left:14px;bottom:10px;font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);opacity:.9}
+.floatplate .grid{position:absolute;inset:0;pointer-events:none;opacity:.25;
+  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:24px 24px}
+@media(hover:none),(pointer:coarse),(max-width:720px){.floatplate{display:none}}
+
+/* technical drawing style (shared by float plate + mini + dispositions) */
+.tp{stroke:var(--accent);fill:none;stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.tp.thin{stroke-width:.7;opacity:.7}
+.tp.dash{stroke-dasharray:4 4;opacity:.6}
+.tp.fill{fill:var(--accent);fill-opacity:.09}
+.tp.ink{stroke:var(--ink);opacity:.85}
+.tp.dim{stroke:var(--ink-dim);stroke-width:.7;opacity:.8}
+.tt{font-family:var(--mono);font-size:7px;fill:var(--ink-dim);letter-spacing:.12em}
+/* self-drawing on reveal */
+.draw .tp{stroke-dasharray:1;stroke-dashoffset:1}
+.draw.in .tp{animation:drawon 1.8s var(--ease-soft) forwards}
+.draw.in .tp:nth-child(2n){animation-delay:.15s}
+.draw.in .tp:nth-child(3n){animation-delay:.3s}
+.draw.in .tp:nth-child(5n){animation-delay:.5s}
+@keyframes drawon{to{stroke-dashoffset:0}}
+
+/* ============ DISPOSITIONS (material cards) ============ */
+.mats{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin-top:8px}
+.matcard{border:1px solid var(--line-soft);border-radius:6px;padding:22px;background:color-mix(in srgb,var(--bg) 78%,transparent);
+  color:var(--ink);text-align:left;font-family:inherit;
+  display:flex;flex-direction:column;gap:14px;cursor:pointer;transition:border-color .45s,transform .45s var(--ease),background .45s;position:relative}
+.matcard:focus-visible{outline:1.5px solid var(--accent);outline-offset:3px}
+.matcard:hover{border-color:var(--line);transform:translateY(-4px)}
+.matcard[data-active="true"]{border-color:var(--accent)}
+.matcard[data-active="true"]::before{content:"● live";position:absolute;top:14px;right:14px;font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent)}
+.swatch{aspect-ratio:16/9;border-radius:4px;position:relative;overflow:hidden;box-shadow:inset 0 0 30px rgba(0,0,0,.5)}
+.swatch::after{content:"";position:absolute;inset:0;background:radial-gradient(50% 60% at 34% 28%,rgba(255,255,255,.75),transparent 55%);mix-blend-mode:screen;opacity:.6}
+.swatch svg{position:absolute;inset:6%;width:88%;height:88%;opacity:.92;filter:drop-shadow(0 2px 6px rgba(0,0,0,.5))}
+.swatch .tp{stroke:#0b0906;stroke-width:1.1}
+.swatch .tp.fill{fill:#0b0906;fill-opacity:.08}
+.swatch .tp.ink,.swatch .tp.dim{stroke:#0b0906}
+.swatch .tt,.swatch .tp.dim{display:none}
+.matcard .mc-name{font-family:var(--disp);font-size:1.15rem;font-weight:700;display:flex;align-items:center;gap:9px;letter-spacing:-.01em}
+.matcard .mc-tag{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint)}
+.matcard .mc-desc{font-size:.9rem;color:var(--ink-dim);line-height:1.5}
+.matcard .mc-link{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin-top:auto;display:inline-flex;gap:8px;align-items:center}
+.matcard .mc-link svg{transition:transform .35s var(--ease)}
+.matcard:hover .mc-link svg{transform:translateX(4px)}
+
+/* ============ RECORD (manifesto + experience) ============ */
+.manifesto{font-family:var(--disp);max-width:20ch;font-weight:400;font-size:clamp(1.7rem,5vw,3.8rem);line-height:1.02;letter-spacing:-.035em}
+.manifesto em{font-style:normal;color:var(--accent);background:linear-gradient(96deg,var(--accent),var(--accent-2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.manifesto b{font-weight:800}
+.manifesto-sub{margin-top:30px;max-width:52ch;color:var(--ink-dim);font-size:clamp(1rem,1.5vw,1.14rem)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:clamp(30px,6vw,90px)}
+@media(max-width:820px){.two{grid-template-columns:1fr;gap:36px}}
+.mono-note{font-family:var(--mono);font-size:.78rem;line-height:1.75;color:var(--ink-dim);display:flex;flex-direction:column;gap:.35em}
+.mono-note .lbl{color:var(--accent);display:block}
+.mono-note .ln{display:grid;grid-template-columns:4.2em 1fr;gap:0 .6em}
+.mono-note .ln.p{display:block;max-width:44ch}
+.mono-note i{font-style:normal;color:var(--ink-faint)}
+.mono-note b{color:var(--ink);font-weight:500}
+
+.record{margin-top:clamp(40px,7vh,80px);border-top:1px solid var(--line)}
+.rec{display:grid;grid-template-columns:150px 1fr;gap:clamp(14px,3vw,40px);padding:26px 4px;border-bottom:1px solid var(--line-soft);transition:background .4s,padding-left .4s var(--ease)}
+.rec:hover{background:color-mix(in srgb,var(--bg-soft) 60%,transparent);padding-left:14px}
+.rec .when{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);line-height:1.9}
+.rec .when small{display:block;color:var(--ink-faint)}
+.rec h3{font-family:var(--disp);font-size:clamp(1.05rem,1.7vw,1.35rem);font-weight:600;letter-spacing:-.015em}
+.rec .org{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint);margin:6px 0 12px}
+.rec ul{list-style:none;display:grid;gap:8px;max-width:72ch;color:var(--ink-dim);font-size:.93rem}
+.rec li{padding-left:16px;position:relative}
+.rec li::before{content:"";position:absolute;left:0;top:.62em;width:6px;height:1px;background:var(--accent)}
+@media(max-width:640px){.rec{grid-template-columns:1fr;gap:8px}}
+
+/* ============ CONTACT ============ */
+.cta{text-align:center;padding-top:clamp(50px,9vh,120px)}
+.cta h2{font-family:var(--disp);font-weight:400;font-size:clamp(2rem,6vw,4.6rem);line-height:1;letter-spacing:-.04em}
+.cta h2 b{font-weight:800}
+.cta .row{margin-top:38px;display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
+.cta .fine{margin-top:22px;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;color:var(--ink-faint)}
+
+/* footer */
+footer{position:relative;z-index:2;border-top:1px solid var(--line-soft);
+  padding:44px clamp(20px,4vw,54px);display:flex;flex-wrap:wrap;gap:20px 40px;align-items:center;justify-content:space-between;
+  font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--ink-faint)}
+footer a{color:var(--ink-dim);transition:color .3s}
+footer a:hover{color:var(--accent)}
+footer .credit b{color:var(--ink);font-weight:400}
+.built-link{display:inline-flex;align-items:center;gap:6px}
+.built-link svg{transition:transform .35s var(--ease)}
+.built-link:hover svg{transform:translateX(3px)}
+
+/* custom gravity-well cursor */
+.wellcursor{position:fixed;top:0;left:0;z-index:30;pointer-events:none;width:34px;height:34px;margin:-17px 0 0 -17px;
+  border:1px solid var(--accent);border-radius:50%;opacity:0;mix-blend-mode:difference;
+  transition:opacity .4s ease,width .3s var(--ease),height .3s var(--ease),margin .3s var(--ease)}
+.wellcursor::before{content:"";position:absolute;inset:calc(50% - 1.5px);width:3px;height:3px;border-radius:50%;background:var(--accent)}
+.wellcursor.on{opacity:.9}
+.wellcursor.press{width:14px;height:14px;margin:-7px 0 0 -7px}
+.wellcursor.link{width:52px;height:52px;margin:-26px 0 0 -26px;border-style:dashed}
+@media(hover:none),(pointer:coarse){.wellcursor{display:none}}
+
+/* scroll progress hairline */
+.progress{position:fixed;top:0;left:0;height:2px;width:100%;z-index:25;transform-origin:left;transform:scaleX(0);background:linear-gradient(90deg,var(--accent),var(--accent-2));pointer-events:none}
+
+@media(prefers-reduced-motion:reduce){
+  .wellcursor{display:none}
+  *{scroll-behavior:auto!important}
+  .hero-eyebrow .dot,.scrollcue svg,.ticker .track{animation:none!important}
+  .reveal{opacity:1;transform:none;transition:none}
+  .draw .tp{stroke-dasharray:none;stroke-dashoffset:0;animation:none!important}
+}
+</style>
+</head>
+<body>
+<!-- ===== WEBGL RAYMARCH STAGE ===== -->
+<div id="stage">
+  <canvas id="gl" aria-hidden="true"></canvas>
+  <div id="fallback" aria-hidden="true"></div>
+</div>
+<div class="grain" aria-hidden="true"></div>
+<div class="vign" aria-hidden="true"></div>
+<div class="wellcursor" id="wellCursor" aria-hidden="true"></div>
+<div class="progress" id="progress" aria-hidden="true"></div>
+
+<div class="wrap">
+<header class="top">
+  <a class="brand" href="#top" aria-label="Emilio Rodea — top of page">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span class="brand-word">Rodea <span class="brand-tag">Mech. Eng.</span></span>
+  </a>
+  <nav aria-label="primary">
+    <a href="#material">Material</a>
+    <a href="#builds">Builds</a>
+    <a href="#states">States</a>
+    <a href="#record">Record</a>
+    <a href="#contact">Contact</a>
+  </nav>
+</header>
+
+<!-- ===== HERO ===== -->
+<section class="hero" id="top">
+  <div class="hero-eyebrow">
+    <span class="dot" aria-hidden="true"></span>
+    <span>Emilio Rodea · mechanical engineer<span class="hide-sm"> · Cal Poly Pomona · class of 2028</span></span>
+    <span class="rule" aria-hidden="true"></span>
+  </div>
+  <h1 class="hero-title">Design intent, <em>poured</em> into <b>hardware.</b></h1>
+  <p class="hero-sub">I build what I draw: a <b>six-axis robot arm</b> from a blank SolidWorks file, a <b>GRBL mini CNC</b>, rugged <b>sheet-metal enclosures</b> for defense hardware, and a molded product that actually sold. <span class="hide-sm">Move your cursor, or click and hold — the alloy is listening.</span><span class="show-sm">Touch the field — the alloy is listening.</span></p>
+  <div class="hero-foot">
+    <a class="matterbtn solid" href="#builds" data-magnet><span class="g" aria-hidden="true"></span>Open the build log</a>
+    <a class="matterbtn" href="../assets/resume/Emilio_Rodea_Resume.pdf" target="_blank" rel="noopener" data-magnet><span class="g" aria-hidden="true"></span>Resume</a>
+    <span class="scrollcue">
+      <svg width="12" height="16" viewBox="0 0 12 16" fill="none" aria-hidden="true"><rect x="1" y="1" width="10" height="14" rx="5" stroke="currentColor"/><circle cx="6" cy="5" r="1.5" fill="currentColor"/></svg>
+      scroll to transmute
+    </span>
+  </div>
+  <div class="ticker" aria-hidden="true">
+    <div class="track" id="ticker"></div>
+  </div>
+</section>
+</div>
+
+<!-- ===== MATERIAL HUD (fixed) ===== -->
+<div class="hud" aria-hidden="false">
+  <div class="hud-read" id="hudRead">
+    material · <b id="hudMat">molten brass</b><br>
+    chapter · <b id="hudChap">product</b><br>
+    <span id="hudFps">render · —</span>
+  </div>
+  <div class="mat-switch" role="group" aria-label="Choose material state">
+    <button class="mat-dot m0" data-mat="0" aria-pressed="true" aria-label="Molten brass — product"><span></span></button>
+    <button class="mat-dot m1" data-mat="1" aria-pressed="false" aria-label="6061 aluminum — machines"><span></span></button>
+    <button class="mat-dot m2" data-mat="2" aria-pressed="false" aria-label="Anodized — rugged hardware"><span></span></button>
+    <button class="mat-dot m3" data-mat="3" aria-pressed="false" aria-label="Heat-tinted titanium — robotics"><span></span></button>
+  </div>
+</div>
+
+<!-- floating technical plate (desktop hover) -->
+<div class="floatplate" id="floatplate" aria-hidden="true">
+  <div class="grid"></div>
+  <div class="pl" data-plate="arm"></div>
+  <div class="pl" data-plate="cnc"></div>
+  <div class="pl" data-plate="shell"></div>
+  <div class="pl" data-plate="clip"></div>
+  <span class="cap" id="plateCap">plate 01 · robotic arm</span>
+</div>
+
+<!-- ===== DOCUMENT ===== -->
+<main class="doc">
+  <!-- MATERIAL / ABOUT -->
+  <section class="panel plate" id="material">
+    <div class="sec-head reveal">
+      <span class="sec-num">§ 01 / material</span>
+      <div>
+        <h2 class="sec-title">One engineer, held at the edge of <b>the drawing.</b></h2>
+        <p class="sec-lead">I'm a mechanical engineering student at Cal Poly Pomona, based in Pomona, CA. Most recently a <b>Mechanical Design Intern at ZMicro</b> in San Diego, designing rugged computing hardware to MIL-STD shock, vibration and EMI requirements. Between terms I run <b>Ecom Rodea LLC</b> — two e-commerce brands where I learned what tooling really costs when you are the one paying for it. Everything on this page is real work; the metal behind it is one fragment shader, raymarched live.</p>
+      </div>
+    </div>
+    <div class="props reveal">
+      <div class="prop"><span class="k">Degrees of freedom</span><span class="v" data-count="6">6 <em>axes</em></span><span class="d">Robot arm designed from scratch around STS3215 serial-bus servos.</span></div>
+      <div class="prop"><span class="k">Sheet gauge</span><span class="v" data-count="0.070">0.070 <em>in</em></span><span class="d">5052-H32 and 6061-T6 split-shell enclosure, no center seam screw.</span></div>
+      <div class="prop"><span class="k">Shop revenue</span><span class="v"><em>$</em><span data-count="40">40 </span><em>K+</em></span><span class="d">Uniteds Trinkets on Etsy, including a carabiner I took through a mold.</span></div>
+      <div class="prop"><span class="k">GPA · graduation</span><span class="v" data-count="3.51">3.51 <em>· May 2028</em></span><span class="d">B.S. Mechanical Engineering, Cal Poly Pomona.</span></div>
+    </div>
+  </section>
+
+  <!-- BUILDS -->
+  <section class="panel plate" id="builds">
+    <div class="sec-head reveal">
+      <span class="sec-num">§ 02 / builds</span>
+      <div>
+        <h2 class="sec-title">Four parts that left <b>the screen.</b></h2>
+        <p class="sec-lead">Nothing here is a kit. Hover a row to pull up its technical plate and the field transmutes to that build's material; on a phone the plates draw themselves inline. Open a row for the full write-up — decisions, tolerances, and the problems that showed up on the way.</p>
+      </div>
+    </div>
+    <div class="spec reveal" id="specRows">
+      <a class="spec-row" href="../projects/robotic-arm.html" data-mat="3" data-plate="arm" data-cap="plate 01 · 6-dof arm · side elevation">
+        <span class="idx">01</span>
+        <span class="name">6-DOF Robotic Arm<small>personal · 2026 → present</small></span>
+        <span class="desc">Six-axis arm designed entirely in SolidWorks around Feetech STS3215 smart servos, built for leader/follower teleoperation and a LeRobot imitation-learning policy. Capsule links, heat-set inserts, 140 mm upper arm, 110 mm forearm.</span>
+        <span class="stat">status <b>CAD in progress</b><br>M3 · FDM · PyTorch<span class="arrow">→</span></span>
+        <span class="mini" data-mini="arm"></span>
+      </a>
+      <a class="spec-row" href="../projects/mini-cnc.html" data-mat="1" data-plate="cnc" data-cap="plate 02 · 3-axis cnc · front elevation">
+        <span class="idx">02</span>
+        <span class="name">3-Axis Mini CNC<small>personal · completed</small></span>
+        <span class="desc">Lead-screw motion platform with a rotary spindle on a wood frame, custom 3D-printed spindle mount, hand-wired stepper drivers, and an Arduino running GRBL. Where my motion-control and firmware experience started.</span>
+        <span class="stat">status <b>running</b><br>GRBL · G-code · steppers<span class="arrow">→</span></span>
+        <span class="mini" data-mini="cnc"></span>
+      </a>
+      <a class="spec-row" href="../projects/tp1-enclosure.html" data-mat="2" data-plate="shell" data-cap="plate 03 · split-shell enclosure · seam detail">
+        <span class="idx">03</span>
+        <span class="name">Split-Shell Enclosure<small>ZMicro · summer 2026</small></span>
+        <span class="desc">Two-piece sheet-metal top shell for a ruggedized removable storage module. Interlocking joints instead of a center seam screw; MIL-STD-461G EMI continuity; MIL-STD-810G / DO-160G shock and vibration; 3D-printed fastener coupons before metal.</span>
+        <span class="stat">status <b>released to shop</b><br>5052-H32 · PEM · PDM<span class="arrow">→</span></span>
+        <span class="mini" data-mini="shell"></span>
+      </a>
+      <a class="spec-row" href="../projects/carabiner.html" data-mat="0" data-plate="clip" data-cap="plate 04 · carabiner · plan view">
+        <span class="idx">04</span>
+        <span class="name">Custom Carabiner<small>Uniteds Trinkets · shipped</small></span>
+        <span class="desc">Accessory designed in SolidWorks with draft, wall thickness, and gate placement decided up front, then taken through mold quoting, first-article review, and a production run for my Etsy line.</span>
+        <span class="stat">status <b>in production</b><br>mold · DFM · launch<span class="arrow">→</span></span>
+        <span class="mini" data-mini="clip"></span>
+      </a>
+    </div>
+  </section>
+
+  <!-- STATES / DISPOSITIONS -->
+  <section class="panel plate" id="states">
+    <div class="sec-head reveal">
+      <span class="sec-num">§ 03 / states</span>
+      <div>
+        <h2 class="sec-title">One engineer. <b>Four dispositions.</b></h2>
+        <p class="sec-lead">The same habits — draw it fully defined, tolerance it honestly, fasten it like it will vibrate — meet the light differently depending on the job. Pick a disposition and the whole instrument transmutes: the field, the reflections, and this page with it.</p>
+      </div>
+    </div>
+    <div class="mats reveal">
+      <div class="matcard" role="button" tabindex="0" data-mat="0" data-active="true">
+        <span class="swatch" style="background:radial-gradient(circle at 34% 28%,#fff3cf,#d9a441 46%,#6b3d0a 100%)" data-swatch="clip"></span>
+        <span class="mc-name">Molten Brass</span>
+        <span class="mc-tag">product · design to manufacturing</span>
+        <span class="mc-desc">Warm, honest, sold in quantity. Draft angles, wall thickness and gate placement decided before the mold vendor ever quotes.</span>
+        <a class="mc-link" href="../projects/carabiner.html">Carabiner <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+      </div>
+      <div class="matcard" role="button" tabindex="0" data-mat="1">
+        <span class="swatch" style="background:radial-gradient(circle at 34% 28%,#ffffff,#c9ced6 46%,#4d545e 100%)" data-swatch="cnc"></span>
+        <span class="mc-name">6061 Aluminum</span>
+        <span class="mc-tag">machines · motion control</span>
+        <span class="mc-desc">Cold, exact, repeatable. Lead screws over belts, steps-per-mm tuned by hand, firmware that has to agree with the mechanics.</span>
+        <a class="mc-link" href="../projects/mini-cnc.html">Mini CNC <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+      </div>
+      <div class="matcard" role="button" tabindex="0" data-mat="2">
+        <span class="swatch" style="background:radial-gradient(circle at 34% 28%,#4c6bb5,#182a58 50%,#050818 100%)" data-swatch="shell"></span>
+        <span class="mc-name">Anodized Black</span>
+        <span class="mc-tag">rugged hardware · defense</span>
+        <span class="mc-desc">Reflection thins; requirements stack. EMI continuity, anti-rattle under vibration, no PVC, no hex-chrome, and the shop still has to form it.</span>
+        <a class="mc-link" href="../projects/tp1-enclosure.html">Split-shell enclosure <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+      </div>
+      <div class="matcard" role="button" tabindex="0" data-mat="3">
+        <span class="swatch" style="background:conic-gradient(from 20deg,#f0c060,#c46bb8,#5a7be6,#40c8b0,#f0c060)" data-swatch="arm"></span>
+        <span class="mc-name">Heat-Tinted Titanium</span>
+        <span class="mc-tag">robotics · learning systems</span>
+        <span class="mc-desc">Angle becomes colour; feedback becomes behaviour. Position-reporting servos, cameras for context, a policy that generalises instead of replaying.</span>
+        <a class="mc-link" href="../projects/robotic-arm.html">6-DOF arm <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- RECORD -->
+  <section class="panel plate" id="record">
+    <div class="two">
+      <div class="reveal">
+        <p class="manifesto">Every part I've shipped was <em>argued</em> before it was <b>cut.</b></p>
+        <p class="manifesto-sub">Against the alloy, against the shop, against the vibration table. The drawing is where the argument happens — fully defined sketches, GD&amp;T that means something, fasteners chosen for the thin gauge they actually sit in. Then the part goes out, and the part gets the last word.</p>
+      </div>
+      <div class="reveal">
+        <div class="mono-note">
+          <span class="lbl">// working set</span>
+          <span class="ln"><i>design</i><b>SolidWorks · sheet metal · GD&amp;T · DFM/DFA · AutoCAD</b></span>
+          <span class="ln"><i>build</i><b>FDM printing · Arduino · GRBL · serial-bus servos</b></span>
+          <span class="ln"><i>learn</i><b>Python · PyTorch (CUDA) · LeRobot · WSL2</b></span>
+          <span class="ln"><i>run</i><b>PDM vault · ECOs · take-offs · lean</b></span>
+          <span class="lbl" style="margin-top:1.4em">// rendering note</span>
+          <span class="ln p">The field behind this page is one fragment shader: sphere distance functions blended by a smooth-min, marched per pixel, reflecting a procedural studio.</span>
+          <span class="ln p">verts <b>0</b> · draw calls <b>1</b> · render scale <b>0.66×</b></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="record reveal">
+      <article class="rec">
+        <div class="when">Summer 2026<small>San Diego, CA</small></div>
+        <div>
+          <h3>Mechanical Design Intern</h3>
+          <div class="org">ZMicro · rugged computing hardware for defense &amp; aerospace</div>
+          <ul>
+            <li>Designed a sheet-metal split-shell enclosure for a ruggedized removable storage module using DFM/DFA principles, meeting MIL-STD-461G EMI and MIL-STD-810G / DO-160G shock and vibration requirements.</li>
+            <li>Designed and revised SolidWorks parts and assemblies for rugged LCD displays and servers — rear bezels, sheet-metal parts, fastener fit-ups — with GD&amp;T-dimensioned drawings and PDM vault management.</li>
+            <li>Ran root-cause failure analysis and thermal/power analysis, wrote ECOs, and supported interface control documentation for customer programs.</li>
+            <li>Authored a technical brief proposing AI integration into change-order, design-verification, and PDM workflows.</li>
+          </ul>
+        </div>
+      </article>
+      <article class="rec">
+        <div class="when">Summer 2025<small>Laguna Beach, CA</small></div>
+        <div>
+          <h3>Project Engineer Intern</h3>
+          <div class="org">Filanc Construction</div>
+          <ul>
+            <li>Cross-checked elevations, layouts, and site conditions against shop drawings in AutoCAD.</li>
+            <li>Produced quantity take-offs, budget estimates, work packages, and QC procedures; processed submittals, RFIs, and change orders.</li>
+            <li>Evaluated subcontractor quotes, saving an estimated $50K+ versus initial estimates through bid analysis and vendor negotiation.</li>
+          </ul>
+        </div>
+      </article>
+      <article class="rec">
+        <div class="when">2024 → present<small>Ecom Rodea LLC</small></div>
+        <div>
+          <h3>Founder · Uniteds Trinkets &amp; UniRodea</h3>
+          <div class="org">Etsy · Amazon FBA · product design to customers</div>
+          <ul>
+            <li>Scaled an Etsy shop to $40K+ in revenue across keychains, phone charms, earrings, and digital wall art through SEO, listing optimization, and consumer research.</li>
+            <li>Launched a home-decor brand on Amazon FBA built with AI tools for concept creation and branding; A+ content, SEO, Amazon PPC.</li>
+            <li>Designed and tooled the custom carabiner in the lineup — the full loop from CAD to mold to shipped product.</li>
+          </ul>
+        </div>
+      </article>
+      <article class="rec">
+        <div class="when">Summer 2024<small>San Diego, CA</small></div>
+        <div>
+          <h3>Social Media Marketing Intern</h3>
+          <div class="org">Road Runner Sports</div>
+          <ul>
+            <li>Produced copy and social content; analyzed and organized advertising data.</li>
+            <li>Led initiatives to incorporate AI-driven marketing strategies, improving ad performance and engagement by 20%.</li>
+          </ul>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section class="panel plate" id="contact">
+    <div class="cta reveal">
+      <h2>Address the <b>engineer.</b></h2>
+      <p class="hero-sub" style="margin:22px auto 0;max-width:46ch;text-align:center">Open to mechanical design and robotics internships and co-ops. If you have a part that needs to survive the real world, I'd like to hear about it.</p>
+      <div class="row">
+        <!-- TODO: replace the placeholder links below -->
+        <a class="matterbtn solid" href="mailto:YOUR_EMAIL@example.com" data-magnet><span class="g" aria-hidden="true"></span>Email me</a>
+        <a class="matterbtn" href="https://www.linkedin.com/in/YOUR_HANDLE" target="_blank" rel="noopener" data-magnet><span class="g" aria-hidden="true"></span>LinkedIn</a>
+        <a class="matterbtn" href="https://github.com/YOUR_HANDLE" target="_blank" rel="noopener" data-magnet><span class="g" aria-hidden="true"></span>GitHub</a>
+        <a class="matterbtn" href="../assets/resume/Emilio_Rodea_Resume.pdf" target="_blank" rel="noopener" data-magnet><span class="g" aria-hidden="true"></span>Resume (PDF)</a>
+      </div>
+      <p class="fine">Pomona, CA · B.S. Mechanical Engineering, expected May 2028</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <span class="credit">© <span id="year">2026</span> <b>Emilio Rodea</b> · Pomona, CA</span>
+  <span>
+    <a class="built-link" href="../workshop/">see the workshop edition
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+  </span>
+  <span>rendered live · raymarched liquid metal · keys 1–4 transmute</span>
+</footer>
+
+<!-- ===== TECHNICAL PLATES (inline SVG templates) ===== -->
+<template id="plate-arm">
+<svg viewBox="0 0 240 180" aria-hidden="true">
+  <path class="tp thin" d="M18 158h204"/>
+  <rect class="tp fill" x="40" y="146" width="64" height="12" rx="2"/>
+  <circle class="tp thin" cx="50" cy="152" r="2"/><circle class="tp thin" cx="94" cy="152" r="2"/>
+  <rect class="tp fill" x="58" y="118" width="28" height="28" rx="4"/>
+  <circle class="tp ink" cx="72" cy="118" r="11"/><circle class="tp thin" cx="72" cy="118" r="3"/>
+  <path class="tp fill" d="M64 118c0-6 4-10 10-10l52-38c6-4 12-2 14 4s-1 12-7 14l-52 38c-6 4-13 1-15-4z"/>
+  <circle class="tp ink" cx="132" cy="74" r="10"/><circle class="tp thin" cx="132" cy="74" r="3"/>
+  <path class="tp fill" d="M126 70c-2-5 1-10 6-11l48-12c5-1 10 2 11 7s-2 10-7 11l-48 12c-5 1-9-2-10-7z"/>
+  <circle class="tp ink" cx="184" cy="58" r="8"/><circle class="tp thin" cx="184" cy="58" r="2.5"/>
+  <path class="tp" d="M190 54l14-6M204 48l6 10M204 48l10-2"/>
+  <path class="tp thin" d="M210 58l-4 8M214 46l6-4"/>
+  <path class="tp dash" d="M72 118 132 74 184 58"/>
+  <path class="tp dim" d="M72 100v-14M132 56v-14M72 88h60"/>
+  <path class="tp dim" d="M132 46v-10M184 40v-6M132 40h52"/>
+  <text class="tt" x="92" y="84">140</text>
+  <text class="tt" x="150" y="36">110</text>
+  <text class="tt" x="18" y="24">6-DOF ARM · SIDE ELEVATION</text>
+  <text class="tt" x="18" y="36">STS3215 ×6 · M3 · FDM</text>
+  <path class="tp thin" d="M34 118h14M34 114v8"/>
+  <text class="tt" x="22" y="121">J2</text>
+</svg>
+</template>
+
+<template id="plate-cnc">
+<svg viewBox="0 0 240 180" aria-hidden="true">
+  <path class="tp thin" d="M14 160h212"/>
+  <rect class="tp fill" x="30" y="138" width="180" height="22" rx="1"/>
+  <rect class="tp fill" x="42" y="44" width="16" height="94"/>
+  <rect class="tp fill" x="182" y="44" width="16" height="94"/>
+  <rect class="tp fill" x="42" y="44" width="156" height="16"/>
+  <path class="tp dash" d="M58 52h124"/>
+  <rect class="tp" x="104" y="36" width="34" height="46" rx="2"/>
+  <path class="tp thin" d="M104 60h34"/>
+  <rect class="tp fill" x="112" y="82" width="18" height="26" rx="2"/>
+  <path class="tp ink" d="M121 108v20"/>
+  <path class="tp" d="M118 128l3 8 3-8"/>
+  <rect class="tp fill" x="200" y="46" width="18" height="12" rx="1"/>
+  <rect class="tp fill" x="22" y="46" width="18" height="12" rx="1"/>
+  <path class="tp thin" d="M58 100h124"/>
+  <path class="tp thin" d="M62 97l4 6M70 97l4 6M78 97l4 6M86 97l4 6M94 97l4 6M102 97l4 6M110 97l4 6M118 97l4 6M126 97l4 6M134 97l4 6M142 97l4 6M150 97l4 6M158 97l4 6M166 97l4 6M174 97l4 6"/>
+  <circle class="tp thin" cx="50" cy="100" r="5"/><circle class="tp thin" cx="190" cy="100" r="5"/>
+  <path class="tp dim" d="M42 170h156M42 166v8M198 166v8"/>
+  <text class="tt" x="108" y="176">X TRAVEL</text>
+  <path class="tp dim" d="M228 44v94M224 44h8M224 138h8"/>
+  <text class="tt" x="18" y="24">3-AXIS CNC · FRONT ELEVATION</text>
+  <text class="tt" x="18" y="36">LEAD SCREW · GRBL · NEMA 17</text>
+  <text class="tt" x="144" y="92">Z</text>
+</svg>
+</template>
+
+<template id="plate-shell">
+<svg viewBox="0 0 240 180" aria-hidden="true">
+  <path class="tp fill" d="M40 80 120 44l80 36-80 36z"/>
+  <path class="tp" d="M40 80v52l80 36 80-36V80"/>
+  <path class="tp ink" d="M120 116v52"/>
+  <path class="tp dash" d="M60 90l60 27 60-27"/>
+  <path class="tp thin" d="M120 44v72"/>
+  <path class="tp" d="M120 44 200 80"/>
+  <path class="tp" d="M116 116l-4 6 8 4 4-6"/>
+  <path class="tp thin" d="M64 100l6 3M76 106l6 3M88 112l6 3M100 118l6 3"/>
+  <path class="tp thin" d="M176 100l-6 3M164 106l-6 3M152 112l-6 3M140 118l-6 3"/>
+  <circle class="tp thin" cx="56" cy="106" r="2.2"/><circle class="tp thin" cx="184" cy="106" r="2.2"/>
+  <circle class="tp thin" cx="56" cy="124" r="2.2"/><circle class="tp thin" cx="184" cy="124" r="2.2"/>
+  <path class="tp dim" d="M120 22v18M120 22h60"/>
+  <text class="tt" x="126" y="20">J-RETURN SEAM · NO SCREW</text>
+  <path class="tp dim" d="M30 132V80M26 80h8M26 132h8"/>
+  <text class="tt" x="18" y="164">0.070 IN 5052-H32 · EMI GASKET PATH</text>
+  <text class="tt" x="18" y="176">MIL-STD-461G · 810G · DO-160G</text>
+  <path class="tp thin" d="M204 136c6 0 8-4 8-8v-30"/>
+  <path class="tp thin" d="M206 98h12"/>
+</svg>
+</template>
+
+<template id="plate-clip">
+<svg viewBox="0 0 240 180" aria-hidden="true">
+  <path class="tp fill" d="M78 40c-22 0-36 16-36 36v34c0 22 16 38 38 38h70c22 0 38-16 38-38V76c0-20-14-36-36-36h-18"/>
+  <path class="tp" d="M78 54c-14 0-22 10-22 22v34c0 14 10 24 24 24h70c14 0 24-10 24-24V76c0-12-8-22-22-22h-18"/>
+  <path class="tp ink" d="M134 40 90 62"/>
+  <path class="tp ink" d="M134 54 96 74"/>
+  <circle class="tp" cx="134" cy="47" r="5"/>
+  <path class="tp thin" d="M88 60c-3 2-3 6 0 8"/>
+  <path class="tp thin" d="M60 76c0-6 4-10 10-10"/>
+  <path class="tp thin" d="M188 76c0-6-4-10-10-10"/>
+  <path class="tp dash" d="M42 92h146"/>
+  <path class="tp dim" d="M42 160h146M42 156v8M188 156v8"/>
+  <text class="tt" x="102" y="170">OVERALL</text>
+  <path class="tp dim" d="M206 40v108M202 40h8M202 148h8"/>
+  <text class="tt" x="18" y="24">CARABINER · PLAN VIEW</text>
+  <text class="tt" x="18" y="36">DRAFT 1.5° · GATE AT SPINE</text>
+  <path class="tp thin" d="M146 128l10 10M156 138h-8M156 138v-8"/>
+  <text class="tt" x="158" y="146">R</text>
+</svg>
+</template>
+
+<script type="x-shader/x-fragment" id="frag">#version 300 es
+precision highp float;
+out vec4 outColor;
+
+uniform vec2  uRes;
+uniform float uTime;
+uniform vec2  uWell;
+uniform float uWellA;
+uniform float uRipT;
+uniform vec2  uRipP;
+uniform float uMat;       // 0 brass, 1 aluminum, 2 anodized, 3 titanium
+uniform float uReduced;
+
+const int   MAX_STEPS = 88;
+const float MAX_DIST  = 14.0;
+const float SURF      = 0.0012;
+
+float smin(float a, float b, float k){
+  float h = clamp(0.5 + 0.5*(b-a)/k, 0.0, 1.0);
+  return mix(b, a, h) - k*h*(1.0-h);
+}
+float sph(vec3 p, vec3 c, float r){ return length(p-c) - r; }
+
+float map(vec3 p){
+  float t = uTime;
+  p += 0.02*sin(p.yzx*3.4 + t*0.6);
+  vec3 c0 = vec3( 1.30*sin(t*0.41),        0.70*sin(t*0.33+1.0), 0.34*sin(t*0.27));
+  vec3 c1 = vec3(-1.15*sin(t*0.37+2.0),    0.78*cos(t*0.29),    -0.30*sin(t*0.31+0.5));
+  vec3 c2 = vec3( 0.42*sin(t*0.53+4.0),   -1.00*sin(t*0.23+2.0), 0.40*cos(t*0.19));
+  vec3 c3 = vec3(-0.50*cos(t*0.47),       -0.72*sin(t*0.43+1.0),-0.34*sin(t*0.37));
+  vec3 c4 = vec3( 0.80*sin(t*0.61+3.0),    0.14*sin(t*0.51),     0.30*sin(t*0.44+2.0));
+  vec3 c5 = vec3( 0.06*sin(t*0.35),        0.06*cos(t*0.4),      0.0);
+  float k = 0.40;
+  float d = sph(p, c0, 0.42);
+  d = smin(d, sph(p, c1, 0.38), k);
+  d = smin(d, sph(p, c2, 0.34), k);
+  d = smin(d, sph(p, c3, 0.32), k);
+  d = smin(d, sph(p, c4, 0.28), k);
+  d = smin(d, sph(p, c5, 0.46), k*1.15);
+  vec3 wc = vec3(uWell*1.9, 0.0);
+  float wr = 0.09 + 0.32*uWellA;
+  d = smin(d, sph(p, wc, wr), 0.5);
+  if(uRipT < 1.6){
+    float rr = uRipT*3.2;
+    float ring = abs(length(p.xy - uRipP) - rr);
+    float amp = (1.0 - uRipT/1.6);
+    d -= 0.12*amp*exp(-ring*ring*7.0);
+  }
+  return d;
+}
+
+vec3 calcNormal(vec3 p){
+  vec2 e = vec2(0.0009, 0.0);
+  return normalize(vec3(
+    map(p+e.xyy)-map(p-e.xyy),
+    map(p+e.yxy)-map(p-e.yxy),
+    map(p+e.yyx)-map(p-e.yyx)));
+}
+
+vec3 envColor(vec3 rd){
+  float up = clamp(rd.y*0.5+0.5, 0.0, 1.0);
+  vec3 floorC = vec3(0.020,0.015,0.010);
+  vec3 midC   = vec3(0.045,0.038,0.028);
+  vec3 topC   = vec3(0.11,0.10,0.085);
+  vec3 sky = mix(floorC, midC, smoothstep(0.0,0.5,up));
+  sky = mix(sky, topC, smoothstep(0.5,1.0,up));
+  vec3 L1 = normalize(vec3( 0.45, 0.75, 0.5));
+  vec3 L2 = normalize(vec3(-0.65, 0.35,-0.6));
+  vec3 L3 = normalize(vec3( 0.15,-0.55, 0.4));
+  float s1 = smoothstep(0.86,0.995, dot(rd,L1));
+  float s2 = smoothstep(0.80,0.99,  dot(rd,L2));
+  float s3 = smoothstep(0.90,0.998, dot(rd,L3));
+  sky += vec3(1.0,0.97,0.90) * s1 * 1.7;
+  sky += vec3(0.55,0.68,1.0) * s2 * 0.7;
+  sky += vec3(1.0,0.85,0.6)  * s3 * 0.9;
+  // a softbox strip — a long horizontal window reflection, reads as a studio
+  float strip = smoothstep(0.32,0.36,rd.y)*(1.0-smoothstep(0.42,0.46,rd.y))*smoothstep(-0.7,-0.3,rd.x)*(1.0-smoothstep(0.3,0.7,rd.x));
+  sky += vec3(0.9,0.92,1.0)*strip*0.5;
+  sky += vec3(0.06)*smoothstep(0.05,0.0,abs(rd.y+0.02));
+  return sky;
+}
+
+void materialParams(vec3 n, vec3 rd, float m, out vec3 baseTint, out float metal, out float rough, out vec3 iri){
+  vec3 brass  = vec3(1.0, 0.72, 0.32);
+  vec3 alu    = vec3(0.92, 0.93, 0.96);
+  vec3 anod   = vec3(0.22, 0.30, 0.62);
+  vec3 titan  = vec3(0.72, 0.70, 0.74);
+  float mi = m;
+  vec3 t01 = mix(brass, alu, clamp(mi,0.0,1.0));
+  vec3 t12 = mix(alu, anod,  clamp(mi-1.0,0.0,1.0));
+  vec3 t23 = mix(anod, titan, clamp(mi-2.0,0.0,1.0));
+  baseTint = mi<1.0? t01 : (mi<2.0? t12 : t23);
+  metal = 1.0 - 0.55*clamp(mi-1.0,0.0,1.0)*clamp(2.0-mi,0.0,1.0);
+  rough = mix(0.12, 0.05, clamp(mi,0.0,1.0));
+  rough = mix(rough, 0.18, clamp(mi-1.0,0.0,1.0)*clamp(2.0-mi,0.0,1.0));
+  // heat-tint interference: titanium oxide bands, gold → purple → blue → teal
+  float fw = clamp(mi-2.0,0.0,1.0);
+  float ct = clamp(dot(n,-rd),0.0,1.0);
+  float ph = (1.0-ct)*9.0 + uTime*0.25;
+  iri = fw * (0.5+0.5*cos(vec3(ph, ph+1.9, ph+3.9))) * vec3(1.0,0.8,1.0);
+}
+
+void main(){
+  vec2 uv = (gl_FragCoord.xy*2.0 - uRes)/uRes.y;
+  float breathe = uReduced>0.5 ? 0.0 : 1.0;
+  float ca = 0.20*sin(uTime*0.13)*breathe;
+  float cy = 0.10*sin(uTime*0.09)*breathe;
+  vec3 ro = vec3(5.0*sin(ca), 0.6+cy, 5.0*cos(ca));
+  vec3 ta = vec3(0.0, 0.0, 0.0);
+  vec3 fwd = normalize(ta-ro);
+  vec3 rgt = normalize(cross(vec3(0,1,0), fwd));
+  vec3 upv = cross(fwd, rgt);
+  vec3 rd = normalize(uv.x*rgt + uv.y*upv + 2.2*fwd);
+
+  float d = 0.0; bool hit=false; vec3 p;
+  for(int i=0;i<MAX_STEPS;i++){
+    p = ro + rd*d;
+    float dist = map(p);
+    if(dist < SURF){ hit=true; break; }
+    d += dist*0.85;
+    if(d > MAX_DIST) break;
+  }
+
+  vec3 col;
+  vec3 envBg = envColor(rd);
+  vec3 bg = envBg * 0.32;
+  bg = mix(bg, bg*vec3(0.7,0.72,0.85), 0.4);
+  if(hit){
+    vec3 n = calcNormal(p);
+    vec3 v = -rd;
+    float fres = pow(clamp(1.0 - max(dot(n,v),0.0), 0.0, 1.0), 5.0);
+    vec3 baseTint; float metal, rough; vec3 iri;
+    materialParams(n, rd, uMat, baseTint, metal, rough, iri);
+    vec3 refl = reflect(rd, n);
+    vec3 env = envColor(refl);
+    vec3 L1 = normalize(vec3(0.4,0.8,0.5));
+    float diff = max(dot(n,L1),0.0);
+    vec3 spec = vec3(pow(max(dot(refl,L1),0.0), mix(60.0,220.0,1.0-rough)));
+    float goldTint = clamp(1.0 - uMat, 0.0, 1.0);
+    vec3 reflTint = mix(baseTint, vec3(1.0), mix(0.42, 0.12, goldTint));
+    col = env * reflTint * (0.85 + 1.0*metal);
+    float goldness = clamp(1.0 - uMat, 0.0, 1.0);
+    vec3 ambient = baseTint * (0.10 + 0.22*goldness) * (n.y*0.4+0.6);
+    col += ambient;
+    col += baseTint * diff * 0.30 * (1.0-metal*0.5);
+    col += spec * (0.7+0.5*metal);
+    col = mix(col, env*1.2 + baseTint*0.28, fres*0.72);
+    col += baseTint * pow(fres,1.5) * (0.4*goldness);
+    col += iri * (0.45 + fres);
+    // anodized: darken body, keep a blue fresnel rim
+    float darken = clamp(uMat-1.0,0.0,1.0)*clamp(3.0-uMat,0.0,1.0);
+    col = mix(col, col*vec3(0.22,0.28,0.48)+bg*0.25, darken*0.55);
+    col *= 1.0 - clamp(d/MAX_DIST,0.0,1.0)*0.25;
+  } else {
+    col = bg;
+  }
+  col = col/(col+vec3(0.9));
+  col = pow(col, vec3(0.4545));
+  float vig = 1.0 - 0.25*dot(uv*0.6,uv*0.6);
+  col *= vig;
+  outColor = vec4(col, 1.0);
+}
+</script>
+
+<script>
+(() => {
+  "use strict";
+  const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  document.getElementById("year").textContent = new Date().getFullYear();
+
+  /* ---------- MATERIAL PALETTES (page chrome) ---------- */
+  const PALETTES = [
+    { "--bg":"#0a0806","--bg-soft":"#140f09","--ink":"#f3e9d6","--ink-dim":"#a99a80","--ink-faint":"#6c6151",
+      "--accent":"#d9a441","--accent-2":"#fff3cf","--line":"rgba(217,164,65,0.16)","--line-soft":"rgba(217,164,65,0.09)",
+      "--glass":"rgba(20,15,9,0.5)","--sel":"rgba(217,164,65,0.28)","--edge":"#241a0e", name:"molten brass", chap:"product", theme:"#0a0806" },
+    { "--bg":"#0b0d10","--bg-soft":"#12161b","--ink":"#eef2f6","--ink-dim":"#9aa4b0","--ink-faint":"#5f6875",
+      "--accent":"#b7cde3","--accent-2":"#ffffff","--line":"rgba(183,205,227,0.18)","--line-soft":"rgba(183,205,227,0.09)",
+      "--glass":"rgba(18,22,27,0.5)","--sel":"rgba(183,205,227,0.30)","--edge":"#1b2430", name:"6061 aluminum", chap:"machines", theme:"#0b0d10" },
+    { "--bg":"#06070d","--bg-soft":"#0c1020","--ink":"#e6e9f5","--ink-dim":"#9099b8","--ink-faint":"#565d78",
+      "--accent":"#7d97e6","--accent-2":"#d6e0ff","--line":"rgba(125,151,230,0.2)","--line-soft":"rgba(125,151,230,0.1)",
+      "--glass":"rgba(12,16,32,0.55)","--sel":"rgba(125,151,230,0.30)","--edge":"#161c38", name:"anodized black", chap:"rugged hardware", theme:"#06070d" },
+    { "--bg":"#08070a","--bg-soft":"#131018","--ink":"#f0e9f2","--ink-dim":"#a79cb0","--ink-faint":"#65596e",
+      "--accent":"#e6a85c","--accent-2":"#c9a8ff","--line":"rgba(230,168,92,0.18)","--line-soft":"rgba(230,168,92,0.09)",
+      "--glass":"rgba(19,16,24,0.5)","--sel":"rgba(201,168,255,0.30)","--edge":"#2a1f30", name:"heat-tinted titanium", chap:"robotics", theme:"#08070a" }
+  ];
+
+  const root = document.documentElement;
+  const hudMat = document.getElementById("hudMat");
+  const hudChap = document.getElementById("hudChap");
+  const themeMeta = document.querySelector('meta[name="theme-color"]');
+  let matTarget = 0, matSmooth = 0.0;
+  let scrollMat = 0, hoverLock = false;
+
+  function applyPalette(i){
+    const p = PALETTES[i];
+    for(const k in p){ if(k.startsWith("--")) root.style.setProperty(k, p[k]); }
+    hudMat.textContent = p.name;
+    hudChap.textContent = p.chap;
+    if(themeMeta) themeMeta.setAttribute("content", p.theme);
+    document.querySelectorAll(".mat-dot,.matcard").forEach(el=>{
+      const on = +el.dataset.mat === i;
+      if(el.classList.contains("mat-dot")) el.setAttribute("aria-pressed", on?"true":"false");
+      if(el.classList.contains("matcard")) el.dataset.active = on?"true":"false";
+    });
+  }
+  function setMaterial(i){ if(i===matTarget) return; matTarget = i; applyPalette(i); }
+
+  document.querySelectorAll(".mat-dot,.matcard").forEach(el=>{
+    el.addEventListener("click", ()=>{ scrollMat = +el.dataset.mat; setMaterial(scrollMat); });
+    el.addEventListener("keydown", e=>{ if(el.classList.contains("matcard") && (e.key==="Enter"||e.key===" ")){ e.preventDefault(); el.click(); } });
+    // hovering a card previews its material; leaving restores the scroll-driven one
+    if(el.classList.contains("matcard")){
+      el.addEventListener("pointerenter", e=>{ if(e.pointerType==="mouse"){ hoverLock=true; setMaterial(+el.dataset.mat); } });
+      el.addEventListener("pointerleave", ()=>{ hoverLock=false; setMaterial(scrollMat); });
+    }
+  });
+  addEventListener("keydown", e=>{
+    if(e.target && /INPUT|TEXTAREA/.test(e.target.tagName)) return;
+    if(e.key>="1" && e.key<="4"){ scrollMat=+e.key-1; setMaterial(scrollMat); }
+    else if(e.key==="ArrowRight"){ scrollMat=(matTarget+1)%4; setMaterial(scrollMat); }
+    else if(e.key==="ArrowLeft"){ scrollMat=(matTarget+3)%4; setMaterial(scrollMat); }
+  });
+  applyPalette(0);
+
+  /* ---------- SKILLS TICKER ---------- */
+  const SKILLS = ["SolidWorks","Sheet metal","GD&T","DFM / DFA","AutoCAD","FDM printing","Arduino","GRBL","G-code","Serial-bus servos","Python","PyTorch","LeRobot","PDM vault","ECOs","Lean manufacturing","MIL-STD-810G","Mold tooling"];
+  const tick = document.getElementById("ticker");
+  tick.innerHTML = SKILLS.concat(SKILLS).map(s=>`<span>${s}</span>`).join("");
+
+  /* ---------- TECHNICAL PLATES ---------- */
+  const plateHost = document.getElementById("floatplate");
+  const plateCap = document.getElementById("plateCap");
+  const tpl = k => document.getElementById("plate-"+k).content.firstElementChild.cloneNode(true);
+  document.querySelectorAll(".floatplate .pl").forEach(pl=> pl.appendChild(tpl(pl.dataset.plate)));
+  document.querySelectorAll(".spec-row .mini").forEach(m=>{ const s=tpl(m.dataset.mini); m.classList.add("draw"); m.appendChild(s); });
+  document.querySelectorAll("[data-swatch]").forEach(sw=> sw.appendChild(tpl(sw.dataset.swatch)));
+
+  let plateX=innerWidth/2, plateY=innerHeight/2, plateTX=plateX, plateTY=plateY, plateOn=false;
+  const rows = document.querySelectorAll(".spec-row");
+  rows.forEach(row=>{
+    row.addEventListener("pointerenter", e=>{
+      if(e.pointerType!=="mouse") return;
+      hoverLock = true; setMaterial(+row.dataset.mat);
+      plateHost.querySelectorAll(".pl").forEach(pl=> pl.classList.toggle("on", pl.dataset.plate===row.dataset.plate));
+      plateCap.textContent = row.dataset.cap;
+      plateHost.classList.add("on"); plateOn=true;
+    });
+    row.addEventListener("pointermove", e=>{ if(e.pointerType==="mouse"){ plateTX=e.clientX+ (e.clientX<innerWidth*0.5? 260:-260); plateTY=e.clientY; }});
+    row.addEventListener("pointerleave", ()=>{
+      hoverLock = false; setMaterial(scrollMat);
+      plateHost.classList.remove("on"); plateOn=false;
+    });
+  });
+
+  /* ---------- MAGNETIC BUTTONS ---------- */
+  if(!REDUCED && matchMedia("(hover:hover)").matches){
+    document.querySelectorAll("[data-magnet]").forEach(btn=>{
+      btn.addEventListener("pointermove", e=>{
+        const r = btn.getBoundingClientRect();
+        const dx = (e.clientX - (r.left+r.width/2))/r.width, dy = (e.clientY - (r.top+r.height/2))/r.height;
+        btn.style.transform = `translate(${dx*10}px,${dy*8}px)`;
+      });
+      btn.addEventListener("pointerleave", ()=>{ btn.style.transform = ""; });
+    });
+  }
+
+  /* ---------- WEBGL RAYMARCHER ---------- */
+  const canvas = document.getElementById("gl");
+  const fallback = document.getElementById("fallback");
+  const hudFps = document.getElementById("hudFps");
+  let gl = null;
+  try { gl = canvas.getContext("webgl2", {antialias:false, alpha:false, powerPreference:"high-performance", preserveDrawingBuffer:true}); }
+  catch(e){ gl = null; }
+
+  function useFallback(){
+    fallback.classList.add("on");
+    hudFps.textContent = "render · css fallback";
+  }
+
+  let prog = null, U = null, W=1, H=1, aspect=1;
+  if(gl){
+    const VS = `#version 300 es
+    in vec2 a; void main(){ gl_Position = vec4(a,0.0,1.0); }`;
+    const FS = document.getElementById("frag").textContent;
+    function compile(type, src){
+      const s = gl.createShader(type);
+      gl.shaderSource(s, src); gl.compileShader(s);
+      if(!gl.getShaderParameter(s, gl.COMPILE_STATUS)){ console.error("shader error:", gl.getShaderInfoLog(s)); return null; }
+      return s;
+    }
+    const vs = compile(gl.VERTEX_SHADER, VS);
+    const fs = compile(gl.FRAGMENT_SHADER, FS);
+    if(vs && fs){
+      prog = gl.createProgram();
+      gl.attachShader(prog, vs); gl.attachShader(prog, fs); gl.linkProgram(prog);
+      if(!gl.getProgramParameter(prog, gl.LINK_STATUS)){ console.error("link error:", gl.getProgramInfoLog(prog)); prog=null; }
+    }
+  }
+  if(!prog){ useFallback(); }
+  else {
+    gl.useProgram(prog);
+    const buf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 3,-1, -1,3]), gl.STATIC_DRAW);
+    const loc = gl.getAttribLocation(prog, "a");
+    gl.enableVertexAttribArray(loc);
+    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    U = {
+      res: gl.getUniformLocation(prog,"uRes"), time: gl.getUniformLocation(prog,"uTime"),
+      well: gl.getUniformLocation(prog,"uWell"), wellA: gl.getUniformLocation(prog,"uWellA"),
+      ripT: gl.getUniformLocation(prog,"uRipT"), ripP: gl.getUniformLocation(prog,"uRipP"),
+      mat: gl.getUniformLocation(prog,"uMat"), reduced: gl.getUniformLocation(prog,"uReduced")
+    };
+    const SCALE = 0.66;
+    function resize(){
+      const dpr = Math.min(window.devicePixelRatio||1, 1.5);
+      W = Math.max(1, Math.floor(innerWidth * dpr * SCALE));
+      H = Math.max(1, Math.floor(innerHeight * dpr * SCALE));
+      canvas.width = W; canvas.height = H;
+      aspect = innerWidth/innerHeight;
+      gl.viewport(0,0,W,H);
+    }
+    resize();
+    addEventListener("resize", resize);
+  }
+
+  /* ---------- CURSOR + POINTER COUPLING ---------- */
+  const wellCursor = document.getElementById("wellCursor");
+  let cursorSX=innerWidth/2, cursorSY=innerHeight/2, cursorPX=cursorSX, cursorPY=cursorSY;
+  if(!REDUCED){
+    addEventListener("pointermove", e=>{ if(e.pointerType==="mouse"){ cursorPX=e.clientX; cursorPY=e.clientY; wellCursor.classList.add("on"); }}, {passive:true});
+    addEventListener("pointerleave", ()=> wellCursor.classList.remove("on"));
+    addEventListener("pointerdown", e=>{ if(e.pointerType==="mouse") wellCursor.classList.add("press"); }, {passive:true});
+    addEventListener("pointerup", ()=> wellCursor.classList.remove("press"));
+    addEventListener("pointerover", e=>{ wellCursor.classList.toggle("link", !!e.target.closest("a,button")); });
+  }
+  let pointerX=0, pointerY=0, hasPointer=false;
+  let wellX=0, wellY=0, wellA=0, wellAtarget=0;
+  function toView(cx, cy){
+    const nx = (cx/innerWidth)*2 - 1;
+    const ny = 1 - (cy/innerHeight)*2;
+    return [nx*aspect, ny];
+  }
+  addEventListener("pointermove", e=>{
+    const v = toView(e.clientX, e.clientY);
+    pointerX=v[0]; pointerY=v[1]; hasPointer=true; if(!holding) wellAtarget=1;
+  }, {passive:true});
+  addEventListener("pointerleave", ()=>{ wellAtarget=0; });
+  addEventListener("blur", ()=>{ wellAtarget=0; });
+  let ripTime = 999, ripX=0, ripY=0, holding=false;
+  addEventListener("pointerdown", e=>{
+    const v = toView(e.clientX, e.clientY);
+    ripX=v[0]; ripY=v[1]; ripTime=0;
+    // hold the pointer down and the well swells — the metal pools under your hand
+    holding = true; wellAtarget = 1.9;
+  }, {passive:true});
+  addEventListener("pointerup", ()=>{ holding=false; wellAtarget = hasPointer?1:0; });
+  addEventListener("pointercancel", ()=>{ holding=false; wellAtarget = 0; });
+
+  /* ---------- FRAME LOOP ---------- */
+  const t0 = performance.now();
+  let last = t0, frames=0, fpsAccum=0;
+  let running = true;
+  document.addEventListener("visibilitychange", ()=>{ running = !document.hidden; if(running){ last=performance.now(); requestAnimationFrame(frame); } });
+
+  function frame(now){
+    if(!running) return;
+    const dt = Math.min((now-last)/1000, 0.05); last = now;
+    const t = (now - t0)/1000;
+    matSmooth += (matTarget - matSmooth) * Math.min(1, dt*3.0);
+    wellA += (wellAtarget - wellA) * Math.min(1, dt*4.0);
+    if(hasPointer){ wellX += (pointerX - wellX) * 0.06; wellY += (pointerY - wellY) * 0.06; }
+    if(ripTime < 5) ripTime += dt;
+    cursorSX += (cursorPX - cursorSX) * 0.16;
+    cursorSY += (cursorPY - cursorSY) * 0.16;
+    wellCursor.style.transform = "translate("+cursorSX+"px,"+cursorSY+"px)";
+    if(plateOn || plateHost.classList.contains("on")){
+      plateX += (plateTX - plateX)*0.12; plateY += (plateTY - plateY)*0.12;
+      plateHost.style.left = plateX+"px"; plateHost.style.top = plateY+"px";
+    }
+    if(prog){
+      gl.uniform2f(U.res, W, H);
+      gl.uniform1f(U.time, t);
+      gl.uniform2f(U.well, wellX, wellY);
+      gl.uniform1f(U.wellA, wellA);
+      gl.uniform1f(U.ripT, ripTime);
+      gl.uniform2f(U.ripP, ripX, ripY);
+      gl.uniform1f(U.mat, matSmooth);
+      gl.uniform1f(U.reduced, REDUCED?1.0:0.0);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+      frames++; fpsAccum += dt;
+      if(fpsAccum > 0.5){
+        hudFps.textContent = "render · " + Math.round(frames/fpsAccum) + " fps · 0.66×";
+        frames=0; fpsAccum=0;
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  // headless / dead-GPU guard: sample a small grid after first frames
+  if(prog){
+    setTimeout(()=>{
+      try{
+        let sum = 0; const px = new Uint8Array(4);
+        const pts = [[0.5,0.5],[0.4,0.45],[0.6,0.55],[0.5,0.35],[0.45,0.6],[0.55,0.42]];
+        for(const [fx,fy] of pts){
+          gl.readPixels(Math.floor(W*fx), Math.floor(H*fy), 1,1, gl.RGBA, gl.UNSIGNED_BYTE, px);
+          sum += px[0]+px[1]+px[2];
+        }
+        if(sum < 12){ useFallback(); canvas.style.opacity = "0"; }
+      }catch(e){}
+    }, 1200);
+  }
+
+  /* ---------- SCROLL: transmute + reveals + progress + HUD tuck ---------- */
+  const doc = document.querySelector("main.doc");
+  const progress = document.getElementById("progress");
+  let ticking=false;
+  function onScroll(){
+    if(ticking) return; ticking=true;
+    requestAnimationFrame(()=>{
+      ticking=false;
+      const max = document.documentElement.scrollHeight - innerHeight;
+      progress.style.transform = "scaleX(" + (max>0? Math.min(1, scrollY/max):0) + ")";
+      if(!doc) return;
+      const rect = doc.getBoundingClientRect();
+      const total = doc.offsetHeight - innerHeight;
+      if(total<=0) return;
+      const prog = Math.min(1, Math.max(0, (-rect.top) / total));
+      const idx = Math.min(3, Math.round(prog*3));
+      if(idx !== scrollMat){ scrollMat = idx; if(!hoverLock) setMaterial(idx); }
+    });
+  }
+  addEventListener("scroll", onScroll, {passive:true});
+  onScroll();
+
+  // HUD tucks away whenever it would collide: over the skills ticker, over the footer,
+  // and — on touch devices, where scrolling already transmutes — anywhere below the hero.
+  const hud = document.querySelector(".hud");
+  const coarse = matchMedia("(pointer:coarse)").matches;
+  const tuckers = new Map();
+  function tuckHud(){ hud.classList.toggle("tucked", [...tuckers.values()].some(Boolean)); }
+  const tuckIO = new IntersectionObserver((ents)=>{
+    ents.forEach(en=>{
+      if(en.target.id==="states") tuckers.set("states", coarse && !en.isIntersecting);
+      else tuckers.set(en.target.className, en.isIntersecting);
+    });
+    tuckHud();
+  }, {threshold:0.01});
+  tuckIO.observe(document.querySelector("footer"));
+  tuckIO.observe(document.querySelector(".ticker"));
+  tuckIO.observe(document.getElementById("states"));
+
+  // count-up on the property figures the first time they scroll in
+  function countUp(el){
+    const raw = el.dataset.count; if(!raw) return;
+    const target = parseFloat(raw), dec = (raw.split(".")[1]||"").length;
+    const dur = 1400, t0 = performance.now();
+    const tail = (el.firstChild.textContent.match(/\s*$/)||[""])[0];
+    (function step(now){
+      const p = Math.min(1, (now-t0)/dur), e = 1 - Math.pow(1-p, 3);
+      el.firstChild.textContent = (target*e).toFixed(dec) + tail;
+      if(p<1) requestAnimationFrame(step);
+    })(t0);
+  }
+  const countIO = new IntersectionObserver((ents)=>{
+    ents.forEach(en=>{ if(en.isIntersecting){ countUp(en.target); countIO.unobserve(en.target); } });
+  }, {threshold:0.5});
+  if(!REDUCED) document.querySelectorAll("[data-count]").forEach(el=>countIO.observe(el));
+  const io = new IntersectionObserver((ents)=>{
+    ents.forEach(en=>{ if(en.isIntersecting){ en.target.classList.add("in"); io.unobserve(en.target); } });
+  }, {threshold:0.12, rootMargin:"0px 0px -8% 0px"});
+  document.querySelectorAll(".reveal,.draw").forEach(el=>io.observe(el));
+})();
+</script>
+</body>
+</html>

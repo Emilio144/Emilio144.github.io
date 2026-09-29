@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>3-Axis Mini CNC — Emilio Rodea</title>
+<meta name="description" content="A from-scratch three-axis CNC with lead screws, a wood frame, a 3D-printed spindle mount, and an Arduino running GRBL." />
+<meta property="og:title" content="3-Axis Mini CNC — Emilio Rodea" />
+<meta property="og:description" content="A from-scratch three-axis CNC with lead screws, a wood frame, a 3D-printed spindle mount, and an Arduino running GRBL." />
+<meta name="theme-color" content="#0a0806" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230a0806'/%3E%3Cdefs%3E%3CradialGradient id='g' cx='38%25' cy='34%25' r='72%25'%3E%3Cstop offset='0' stop-color='%23fff3cf'/%3E%3Cstop offset='.45' stop-color='%23e5a53a'/%3E%3Cstop offset='1' stop-color='%23713d0a'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='16' cy='16' r='9' fill='url(%23g)'/%3E%3Ccircle cx='12.6' cy='12.4' r='2.1' fill='%23fffdf3' opacity='.9'/%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+<div id="stage">
+  <canvas id="gl" aria-hidden="true"></canvas>
+  <div id="fallback" aria-hidden="true"></div>
+</div>
+<div class="draft" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
+<div class="vign" aria-hidden="true"></div>
+<div class="finder" id="finder" aria-hidden="true">
+  <span class="c tl"></span><span class="c tr"></span><span class="c bl"></span><span class="c br"></span>
+  <span class="ring"></span><span class="cross"></span>
+  <div class="f-tag"><b id="fFig"></b><span id="fName"></span></div>
+  <div class="f-dim"><span id="fDim"></span></div>
+  <div class="f-read" id="fRead"></div>
+</div>
+<div class="wellcursor" id="wellCursor" aria-hidden="true"></div>
+<div class="cur-label" id="curLabel" aria-hidden="true"></div>
+<svg class="hold-ring" id="holdRing" viewBox="0 0 74 74" aria-hidden="true"><circle cx="37" cy="37" r="35" /></svg>
+
+<div class="topfade" aria-hidden="true"></div>
+<header class="top">
+  <a class="brand" href="../index.html">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span class="brand-word"><b>RODEA</b><span class="brand-tag">ME · CPP</span></span><span class="sr"> Emilio Rodea, home</span>
+  </a>
+  <nav aria-label="primary">
+    <a href="../index.html#builds" data-nav="builds" aria-current="true">Builds</a>
+    <a href="../index.html#record">Record</a>
+    <a href="../index.html#contact">Contact</a>
+    <a class="pill" href="../assets/resume/Emilio_Rodea_Resume.pdf" target="_blank" rel="noopener">Résumé ↗</a>
+  </nav>
+</header>
+
+<div class="wrap">
+<section class="phero" data-form="3" data-align="right" data-focal="2.35" data-mat="0"
+  data-fig="FIG. 03" data-name="3-axis mini CNC · live sketch" data-note="Arduino · GRBL · G-code">
+  <div class="copy">
+    <a class="back" href="../index.html#builds">← all builds</a>
+    <div class="eyebrow fade-up"><span class="dot" aria-hidden="true"></span><span>Personal project · complete</span><span class="rule" aria-hidden="true"></span></div>
+    <h1><span class="ln"><span>A mini CNC,</span></span><span class="ln"><span>wired and tuned</span></span><span class="ln"><span><b>by hand.</b></span></span></h1>
+    <p class="lede fade-up">A three-axis motion platform with a rotary spindle: lead screws and bearings on every axis, a wood frame, a custom printed spindle mount, and an Arduino running GRBL to turn G-code into coordinated motion. The stepping stone to the arm.</p>
+    <dl class="mini fade-up"><div><dt>Role</dt><dd>Designer, fabricator, wiring & firmware</dd></div><div><dt>Motion</dt><dd>3 axes on lead screws + bearings</dd></div><div><dt>Control</dt><dd>Arduino + GRBL, G-code</dd></div><div><dt>Fab</dt><dd>Wood frame, printed spindle mount</dd></div></dl>
+    <div class="ch-foot fade-up"><span class="hint"><span class="ptr">your cursor jogs X / Y · <kbd>click</kbd> plunge · <kbd>hold</kbd> melt</span></span></div>
+  </div>
+</section>
+</div>
+
+<div class="hud">
+  <div class="hud-read" aria-hidden="true">
+    form · <b id="hudForm">liquid</b> · solidity <b id="hudLiq">0.00</b><br>
+    material · <b id="hudMat">molten gold</b><br>
+    <span id="hudFps">render · —</span>
+  </div>
+  <div class="mat-switch" role="group" aria-label="Choose the metal's material">
+    <button class="mat-dot m0" data-mat="0" aria-pressed="true" aria-label="Molten gold"><span></span></button>
+    <button class="mat-dot m1" data-mat="1" aria-pressed="false" aria-label="Liquid chrome"><span></span></button>
+    <button class="mat-dot m2" data-mat="2" aria-pressed="false" aria-label="Obsidian glass"><span></span></button>
+    <button class="mat-dot m3" data-mat="3" aria-pressed="false" aria-label="Anodized oil"><span></span></button>
+  </div>
+</div>
+<main class="doc">
+  <section class="panel plate-solid" data-form="0" data-align="center" data-dim="1" data-mat="0" >
+    <div class="sec-head reveal">
+      <span class="sec-num">§ 01 / build</span>
+      <div><h2 class="sec-title">The whole stack, <b>by hand.</b></h2><p class="sec-lead">I wanted to understand multi-axis motion control by building all of it myself: the mechanics that move, the electronics that drive them, and the firmware that coordinates them. Nothing came from a kit.</p></div>
+    </div>
+    
+    <div class="two">
+      <div class="prose reveal">
+        <h2>Mechanical</h2>
+        <ul>
+          <li><b>Three linear axes</b> on lead screws with bearing supports, for repeatable positioning without belts.</li>
+          <li><b>Wood frame and base</b>, chosen for fast iteration and low cost.</li>
+          <li><b>Custom 3D-printed spindle mount</b> clamping the rotary tool to the Z carriage. Designing it forced me to think about tool runout, clamp stiffness, and how the mount meets the moving axis.</li>
+        </ul>
+        <h2>Electronics &amp; control</h2>
+        <ul>
+          <li><b>Arduino-based controller</b> wired by hand to the stepper drivers and motors.</li>
+          <li><b>GRBL firmware</b> configured for the machine: steps per mm, axis limits, feed rates, acceleration.</li>
+          <li><b>G-code</b> streamed to the controller to run coordinated 3-axis toolpaths.</li>
+        </ul>
+      </div>
+      <div>
+        <figure class="fig reveal"><div class="frame" style="--ar:16/10"><img src="../assets/img/mini-cnc/hero.jpg" alt="Photo: the finished machine, well lit" data-hint="Photo: the finished machine, well lit" data-no="PL. 01" loading="lazy"></div><figcaption><b>PL. 01</b><span>The finished machine: three lead-screw axes on a wood base, spindle on the Z carriage.</span></figcaption></figure>
+        <figure class="fig reveal"><div class="frame" style="--ar:4/3"><img src="../assets/img/mini-cnc/spindle-mount.jpg" alt="Photo/CAD: printed spindle mount on Z carriage" data-hint="Photo/CAD: printed spindle mount on Z carriage" data-no="PL. 02" loading="lazy"></div><figcaption><b>PL. 02</b><span>3D-printed spindle mount on the Z carriage.</span></figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel plate-solid" data-form="0" data-align="center" data-dim="1" data-mat="0" >
+    <div class="sec-head reveal">
+      <span class="sec-num">§ 02 / lessons</span>
+      <div><h2 class="sec-title">Skills that <b>carried forward.</b></h2></div>
+    </div>
+    
+    <div class="cons reveal">
+      <div><span class="k">01</span><h3>Multi-axis motion control</h3><p>Tuning steps/mm, acceleration and feed rates in GRBL showed me how motor limits, mechanical stiffness and firmware settings interact.</p></div>
+      <div><span class="k">02</span><h3>Electromechanical integration</h3><p>Wiring drivers, motors and a controller by hand, then debugging when an axis stalled or ran backward.</p></div>
+      <div><span class="k">03</span><h3>Printed parts under real load</h3><p>The spindle mount was my first printed part that had to hold a spinning tool. It shaped how I tolerance and fasten parts on the arm.</p></div>
+    </div>
+    <div class="gallery" style="margin-top:44px">
+      <figure class="fig reveal"><div class="frame" style="--ar:4/3"><img src="../assets/img/mini-cnc/wiring.jpg" alt="Photo: Arduino + driver wiring" data-hint="Photo: Arduino + driver wiring" data-no="PL. 03" loading="lazy"></div><figcaption><b>PL. 03</b><span>Hand-wired Arduino controller and stepper drivers.</span></figcaption></figure>
+      <figure class="fig reveal"><div class="frame" style="--ar:4/3"><img src="../assets/img/mini-cnc/build-1.jpg" alt="Photo: frame / axis assembly in progress" data-hint="Photo: frame / axis assembly in progress" data-no="PL. 04" loading="lazy"></div><figcaption><b>PL. 04</b><span>Frame and axis assembly in progress.</span></figcaption></figure>
+      <figure class="fig reveal"><div class="frame" style="--ar:4/3"><img src="../assets/img/mini-cnc/build-2.jpg" alt="Photo: lead screw + bearing block" data-hint="Photo: lead screw + bearing block" data-no="PL. 05" loading="lazy"></div><figcaption><b>PL. 05</b><span>Lead screw and bearing detail.</span></figcaption></figure>
+      <figure class="fig reveal"><div class="frame" style="--ar:4/3"><img src="../assets/img/mini-cnc/running.jpg" alt="Photo: machine running a job / first cut" data-hint="Photo: machine running a job / first cut" data-no="PL. 06" loading="lazy"></div><figcaption><b>PL. 06</b><span>Running a G-code job.</span></figcaption></figure>
+    </div>
+  </section>
+
+  <section class="chapter" data-form="2" data-morph="progress" data-align="right" data-focal="2.45" data-mat="1" data-nav="builds"
+    data-fig="NEXT" data-name="6-DOF Robotic Arm" data-note="personal · in progress" style="min-height:170vh">
+    <div class="stick">
+      <div class="copy">
+        <div class="ch-kicker reveal"><span>next build</span><span class="st">the metal is already remembering it</span></div>
+        <h2 class="ch-title reveal">Keep <em class="s">going.</em></h2>
+        <div class="cards" style="margin-top:30px"><a class="card reveal" href="robotic-arm.html"><span class="swatch sw1"><b>02</b></span><span class="tag">personal · in progress</span><h3>6-DOF Robotic Arm</h3><p>Six smart servos, capsule links, and an imitation-learning stack.</p><svg class="arrow" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 12L12 4M5 4h7v7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></a><a class="card reveal" href="carabiner.html"><span class="swatch sw3"><b>01</b></span><span class="tag">Uniteds Trinkets · shipped</span><h3>Custom Carabiner</h3><p>From SolidWorks, to a mold, to customers.</p><svg class="arrow" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 12L12 4M5 4h7v7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></a></div>
+      </div>
+    </div>
+  </section>
+</main>
+<footer>
+  <span>© <span data-year>2026</span> <b>Emilio Rodea</b></span>
+  <span>Figures are live raymarched sketches, not CAD · press <b>1–4</b> to transmute</span>
+  <a href="../index.html#builds">All builds ↑</a>
+</footer>
+<script src="../js/metal.js"></script>
+<script src="../js/site.js"></script>
+</body>
+</html>
