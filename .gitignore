@@ -2,3 +2,6 @@
 Thumbs.db
 *.log
 .tmp/
+
+# raw phone originals (processed copies live in assets/)
+Video & Photo/

@@ -244,6 +244,9 @@
     img.remove();
     frame.appendChild(box);
   }
+  /* looping clips: hold on the poster frame for reduced-motion users */
+  if (REDUCED) $$(".fig video").forEach(function (v) { v.removeAttribute("autoplay"); v.pause(); v.controls = true; });
+
   $$(".fig img").forEach(function (img) {
     if (img.complete && img.naturalWidth === 0) pending(img);
     else img.addEventListener("error", function () { pending(img); });
