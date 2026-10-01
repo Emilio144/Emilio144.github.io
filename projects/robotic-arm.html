@@ -109,7 +109,7 @@
           <tr><th>Upper arm</th><td>140 mm</td></tr>
           <tr><th>Forearm</th><td>110 mm, elbow to wrist</td></tr>
           <tr><th>Servo pocket</th><td>+0.3–0.5 mm total clearance; the 4 mm rear pivot boss bored to 4.2 mm for a snug pivot</td></tr>
-          <tr><th>Fasteners</th><td>M3 throughout: 4.2 mm holes for brass heat-set inserts, 3.4 mm clearance in mating parts</td></tr>
+          <tr><th>Fasteners</th><td>M3 throughout: links screw directly into the servo horns, 3.4 mm clearance holes in mating parts</td></tr>
           <tr><th>Aesthetic</th><td>White and electric blue, capsule links, cylindrical joint housings, exposed servo horns</td></tr>
           <tr><th>Fabrication</th><td>FDM 3D printing (slicer selection pending)</td></tr>
         </table>
@@ -127,7 +127,7 @@
     </div>
     <div class="gallery" style="margin-top:44px">
       <figure class="fig reveal"><div class="frame" style="--ar:4/3"><img src="../assets/img/robotic-arm/wrist.jpg" alt="CAD: wrist servo seated in its housing, horn bolted to the gripper" data-hint="CAD: wrist servo seated in its housing, horn bolted to the gripper" data-no="PL. 03" loading="lazy"></div><figcaption><b>PL. 03</b><span>Wrist joint: servo seated in its housing, horn bolted straight to the gripper jaw.</span></figcaption></figure>
-      <figure class="fig reveal"><div class="frame" style="--ar:4/3"><img src="../assets/img/robotic-arm/link-detail.jpg" alt="CAD: capsule link with heat-set insert bosses" data-hint="CAD: capsule link with heat-set insert bosses" data-no="PL. 04" loading="lazy"></div><figcaption><b>PL. 04</b><span>Capsule link with heat-set insert bosses.</span></figcaption></figure>
+      <figure class="fig reveal"><div class="frame" style="--ar:4/3"><img src="../assets/img/robotic-arm/link-detail.jpg" alt="CAD: link end screwed directly to the servo horn" data-hint="CAD: link end screwed directly to the servo horn" data-no="PL. 04" loading="lazy"></div><figcaption><b>PL. 04</b><span>Link end screwed straight into the servo horn, no inserts needed.</span></figcaption></figure>
       <figure class="fig reveal"><div class="frame" style="--ar:4/3"><img src="../assets/img/robotic-arm/leader-arm.jpg" alt="CAD: leader arm with handle and trigger" data-hint="CAD: leader arm with handle and trigger" data-no="PL. 05" loading="lazy"></div><figcaption><b>PL. 05</b><span>Leader arm: a handle and trigger replace the gripper so I can drive the follower by hand.</span></figcaption></figure>
       <figure class="fig reveal"><div class="frame" style="--ar:4/3"><img src="../assets/img/robotic-arm/servo.jpg" alt="Photo: STS3215 servo + driver board" data-hint="Photo: STS3215 servo + driver board" data-no="PL. 06" loading="lazy"></div><figcaption><b>PL. 06</b><span>STS3215 smart servo with its serial driver board.</span></figcaption></figure>
     </div>
@@ -156,7 +156,7 @@
         <ol class="steps">
           <li class="done"><span><b>Architecture &amp; components.</b> Servos, control approach, software stack.</span><span class="st">done</span></li>
           <li class="now"><span><b>Full arm CAD in SolidWorks.</b></span><span class="st">now</span></li>
-          <li><span><b>Slice and print all parts</b>, fit-check servos and inserts.</span><span class="st">next</span></li>
+          <li><span><b>Slice and print all parts</b>, fit-check servos and horn screws.</span><span class="st">next</span></li>
           <li><span><b>Assign servo IDs</b> and validate the bus.</span><span class="st"></span></li>
           <li><span><b>Stand up the environment</b> and integrate LeRobot.</span><span class="st"></span></li>
           <li><span><b>Build a matching leader arm</b> for teleoperation.</span><span class="st"></span></li>
@@ -173,7 +173,7 @@
       <div class="copy">
         <div class="ch-kicker reveal"><span>next build</span><span class="st">the metal is already remembering it</span></div>
         <h2 class="ch-title reveal">Keep <em class="s">going.</em></h2>
-        <div class="cards" style="margin-top:30px"><a class="card reveal" href="mini-cnc.html"><span class="swatch sw0"><b>03</b></span><span class="tag">personal · complete</span><h3>3-Axis Mini CNC</h3><p>Lead screws, GRBL and a printed spindle mount. Where the motion work started.</p><svg class="arrow" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 12L12 4M5 4h7v7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></a><a class="card reveal" href="tp1-enclosure.html"><span class="swatch sw2"><b>04</b></span><span class="tag">ZMicro · summer 2026</span><h3>Split-Shell Enclosure</h3><p>A sheet-metal seam that holds itself together under MIL-STD shock.</p><svg class="arrow" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 12L12 4M5 4h7v7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></a></div>
+        <div class="cards" style="margin-top:30px"><a class="card reveal" href="mini-cnc.html"><span class="swatch sw0 has-img" style="background-image:url(../assets/img/thumbs/mini-cnc.jpg)"><b>03</b></span><span class="tag">personal · complete</span><h3>3-Axis Mini CNC</h3><p>Lead screws, GRBL and a printed spindle mount. Where the motion work started.</p><svg class="arrow" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 12L12 4M5 4h7v7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></a><a class="card reveal" href="tp1-enclosure.html"><span class="swatch sw2 has-img" style="background-image:url(../assets/img/thumbs/tp1-enclosure.jpg)"><b>04</b></span><span class="tag">ZMicro · summer 2026</span><h3>Split-Shell Enclosure</h3><p>A sheet-metal seam that holds itself together under MIL-STD shock.</p><svg class="arrow" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 12L12 4M5 4h7v7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></a></div>
       </div>
     </div>
   </section>

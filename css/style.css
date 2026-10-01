@@ -337,12 +337,16 @@ section.panel{padding:clamp(72px,12vh,150px) var(--gut);position:relative}
 .card{border:1px solid var(--line-soft);border-radius:6px;padding:24px;background:color-mix(in srgb,var(--bg) 80%,transparent);
   display:flex;flex-direction:column;gap:14px;transition:border-color .45s,transform .45s var(--ease),background .45s;position:relative;overflow:hidden}
 a.card:hover,.card.lift:hover{border-color:var(--line);transform:translateY(-4px)}
-.card .swatch{height:112px;border-radius:4px;position:relative;overflow:hidden;border:1px solid var(--line-soft);
+.card .swatch{height:132px;border-radius:4px;position:relative;overflow:hidden;border:1px solid var(--line-soft);
   background:linear-gradient(var(--line-soft) 1px,transparent 1px) -1px -1px/22px 22px,linear-gradient(90deg,var(--line-soft) 1px,transparent 1px) -1px -1px/22px 22px,var(--bg-soft)}
 .card .swatch::before{content:"";position:absolute;right:26px;top:50%;width:76px;height:76px;margin-top:-38px;border-radius:50%;background:var(--orb);
   box-shadow:inset -8px -10px 18px rgba(0,0,0,.55),inset 4px 4px 10px rgba(255,255,255,.25),0 18px 30px -12px rgba(0,0,0,.7);transition:transform .8s var(--ease)}
 .card .swatch::after{content:"";position:absolute;right:26px;top:50%;width:76px;height:14px;margin-top:40px;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.55),transparent)}
 a.card:hover .swatch::before,.card.lift:hover .swatch::before{transform:translateY(-6px) scale(1.04)}
+.card .swatch.has-img{background-size:cover;background-position:center;transition:transform .8s var(--ease),filter .6s}
+.card .swatch.has-img::before,.card .swatch.has-img::after{display:none}
+a.card:hover .swatch.has-img{filter:brightness(1.08)}
+.card .swatch.has-img b{color:#fff;background:rgba(0,0,0,.45);padding:3px 7px;border-radius:3px}
 .card .swatch b{position:absolute;left:16px;bottom:12px;font-family:var(--mono);font-size:12.5px;letter-spacing:.2em;color:var(--ink-dim);font-weight:400;z-index:1}
 .card h3{font-size:1.3rem;font-weight:500;letter-spacing:-.01em}
 .card .tag{font-family:var(--mono);font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint)}
@@ -350,7 +354,7 @@ a.card:hover .swatch::before,.card.lift:hover .swatch::before{transform:translat
 .card p a{color:var(--accent);border-bottom:1px solid var(--line)}
 .card .big{font-size:clamp(2rem,3.4vw,2.8rem);font-weight:300;letter-spacing:-.03em;line-height:1}
 .card .big em{font-style:normal;font-size:.5em;color:var(--ink-dim)}
-.card .arrow{position:absolute;right:22px;top:22px;transition:transform .4s var(--ease)}
+.card .arrow{position:absolute;right:22px;top:22px;z-index:2;filter:drop-shadow(0 0 3px rgba(0,0,0,.9));transition:transform .4s var(--ease)}
 a.card:hover .arrow{transform:translate(3px,-3px)}
 .chips{display:flex;flex-wrap:wrap;gap:6px;list-style:none}
 .chips li{font-family:var(--mono);font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;padding:5px 9px;border:1px solid var(--line-soft);border-radius:20px;color:var(--ink-dim)}
