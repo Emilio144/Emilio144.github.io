@@ -89,10 +89,80 @@
         <p>A <b>leader</b> arm is moved by hand. A <b>follower</b> arm mirrors it in real time by reading the leader's servo positions and commanding its own. Camera frames plus servo positions from each session are logged as a dataset, which trains a policy that maps what the camera sees to the next motor commands, so the arm can eventually do the task on its own.</p>
       </div>
       <div>
-        <figure class="fig reveal"><div class="frame" style="--ar:16/10"><img src="../assets/img/robotic-arm/hero.jpg" alt="Follower arm, full assembly in SolidWorks" data-hint="Follower arm, full assembly in SolidWorks" data-no="PL. 01" loading="lazy"></div><figcaption><b>PL. 01</b><span>Follower arm, full assembly in SolidWorks. Every structural part is my own design, not an adapted kit.</span></figcaption></figure>
-        <figure class="fig reveal"><div class="frame" style="--ar:16/9"><img src="../assets/img/robotic-arm/teleop-diagram.png" alt="Diagram: leader → follower → camera + servo data → policy" data-hint="Diagram: leader → follower → camera + servo data → policy" data-no="PL. 02" loading="lazy"></div><figcaption><b>PL. 02</b><span>Leader/follower teleoperation and the data path into the policy.</span></figcaption></figure>
+        <figure class="fig reveal"><div class="frame" style="--ar:16/10"><img src="../assets/img/robotic-arm/pair.jpg" alt="Photo: printed leader arm (left) and follower arm (right) on the desk, wired to the servo bus adapter" data-hint="Photo: printed leader arm (left) and follower arm (right) on the desk, wired to the servo bus adapter" data-no="PL. 01" loading="lazy"></div><figcaption><b>PL. 01</b><span>Both arms built: the leader (left) is moved by hand, the follower (right) mirrors it. Every structural part is my own design, not an adapted kit.</span></figcaption></figure>
+        <figure class="fig reveal"><div class="frame" style="--ar:16/9"><svg class="diagram" viewBox="0 0 1600 900" role="img" aria-labelledby="tdT tdD" style="width:100%;height:100%;display:block">
+            <title id="tdT">Teleoperation and data path</title>
+            <desc id="tdD">The leader arm, moved by hand, sends its joint positions over the serial bus to a PC running LeRobot, which commands the follower arm to match. Camera frames and joint states from each session are logged as a dataset, which trains a policy that will drive the follower on its own.</desc>
+            <defs>
+              <marker id="tdA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--accent)"/></marker>
+              <marker id="tdB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--ink-faint)"/></marker>
+              <pattern id="tdG" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="var(--line-soft)" stroke-width="1"/></pattern>
+            </defs>
+            <rect width="1600" height="900" fill="url(#tdG)"/>
+            <g font-family="var(--mono)" font-size="22" letter-spacing="3" fill="var(--ink-faint)">
+              <text x="70" y="78">TELEOP LOOP · RUNNING</text>
+              <text x="70" y="545">LEARNING PATH · NEXT</text>
+              <text x="1530" y="78" text-anchor="end">PL. 02</text>
+            </g>
+            <line x1="70" y1="492" x2="1530" y2="492" stroke="var(--line)" stroke-dasharray="4 10"/>
+          
+            <!-- top row: solid, working today -->
+            <g fill="var(--bg)" stroke="var(--accent)" stroke-width="2">
+              <rect x="70" y="120" width="380" height="250" rx="10"/>
+              <rect x="610" y="120" width="380" height="250" rx="10"/>
+              <rect x="1150" y="120" width="380" height="250" rx="10"/>
+            </g>
+            <g font-family="var(--sans)" fill="var(--ink)" font-size="44" font-weight="500">
+              <text x="105" y="200">Leader arm</text>
+              <text x="645" y="200">PC · LeRobot</text>
+              <text x="1185" y="200">Follower arm</text>
+            </g>
+            <g font-family="var(--sans)" fill="var(--ink-dim)" font-size="28" font-weight="300">
+              <text x="105" y="258">moved by hand,</text><text x="105" y="296">handle + trigger</text><text x="105" y="334">6× STS3215 read</text>
+              <text x="645" y="258">WSL2 · Python</text><text x="645" y="296">reads leader,</text><text x="645" y="334">writes follower</text>
+              <text x="1185" y="258">mirrors the leader,</text><text x="1185" y="296">serrated gripper</text><text x="1185" y="334">6× STS3215 driven</text>
+            </g>
+            <g stroke="var(--accent)" stroke-width="3" fill="none" marker-end="url(#tdA)">
+              <path d="M456 245H602"/>
+              <path d="M996 245H1142"/>
+            </g>
+            <g font-family="var(--mono)" font-size="21" fill="var(--accent)" text-anchor="middle" letter-spacing="1">
+              <text x="530" y="226">positions</text><text x="530" y="282">serial bus</text>
+              <text x="1070" y="226">goal pos.</text><text x="1070" y="282">serial bus</text>
+            </g>
+          
+            <!-- bottom row: dashed, the next phase -->
+            <g fill="var(--bg)" stroke="var(--ink-faint)" stroke-width="2" stroke-dasharray="10 8">
+              <rect x="70" y="570" width="380" height="230" rx="10"/>
+              <rect x="610" y="570" width="380" height="230" rx="10"/>
+              <rect x="1150" y="570" width="380" height="230" rx="10"/>
+            </g>
+            <g font-family="var(--sans)" fill="var(--ink)" font-size="44" font-weight="500">
+              <text x="105" y="648">Cameras</text>
+              <text x="645" y="648">Dataset</text>
+              <text x="1185" y="648">Policy</text>
+            </g>
+            <g font-family="var(--sans)" fill="var(--ink-dim)" font-size="28" font-weight="300">
+              <text x="105" y="706">scene context the</text><text x="105" y="744">joint angles can't give</text>
+              <text x="645" y="706">frames + joint states</text><text x="645" y="744">logged per session</text>
+              <text x="1185" y="706">PyTorch · CUDA</text><text x="1185" y="744">image → next command</text>
+            </g>
+            <g stroke="var(--ink-faint)" stroke-width="3" fill="none" stroke-dasharray="10 8" marker-end="url(#tdB)">
+              <path d="M456 685H602"/>
+              <path d="M996 685H1142"/>
+              <path d="M800 376V562"/>
+              <path d="M1340 562V376"/>
+            </g>
+            <g font-family="var(--mono)" font-size="21" fill="var(--ink-faint)" letter-spacing="1">
+              <text x="530" y="666" text-anchor="middle">frames</text>
+              <text x="1070" y="666" text-anchor="middle">train</text>
+              <text x="818" y="450">log each session</text>
+              <text x="1322" y="450" text-anchor="end">drives it alone</text>
+            </g>
+          </svg></div><figcaption><b>PL. 02</b><span>Leader/follower teleoperation runs today. The dashed half, cameras into a dataset into a policy, is what I'm building next.</span></figcaption></figure>
       </div>
     </div>
+    <figure class="fig reveal" style="max-width:1100px;margin:48px auto 0"><div class="frame" style="--ar:16/9"><video src="../assets/video/arm-teleop.mp4" poster="../assets/video/arm-teleop.jpg" autoplay muted loop playsinline preload="metadata" aria-label="Video: moving the leader arm by hand while the follower mirrors it, grips an eraser and lifts it, sped up 1.5x"></video></div><figcaption><b>PL. 03</b><span>Live teleoperation: I move the leader (left edge), the follower mirrors it, closes on an eraser and lifts it. Sped up 1.5×.</span></figcaption></figure>
   </section>
 
   <section class="panel plate-solid" data-form="0" data-align="center" data-dim="1" data-mat="1" >
@@ -110,7 +180,7 @@
           <tr><th>Forearm</th><td>110 mm, elbow to wrist</td></tr>
           <tr><th>Servo pocket</th><td>+0.3–0.5 mm total clearance; the 4 mm rear pivot boss bored to 4.2 mm for a snug pivot</td></tr>
           <tr><th>Fasteners</th><td>M3 throughout: links screw directly into the servo horns, 3.4 mm clearance holes in mating parts</td></tr>
-          <tr><th>Aesthetic</th><td>White and electric blue, capsule links, cylindrical joint housings, exposed servo horns</td></tr>
+          <tr><th>Aesthetic</th><td>Matte black, capsule links with round and diamond lightening cut-outs, exposed servo horns</td></tr>
           <tr><th>Fabrication</th><td>FDM 3D printed in PETG, sliced in Bambu Studio</td></tr>
         </table>
       </div>
@@ -123,11 +193,16 @@
         </ul>
       </div>
     </div>
-    <div class="gallery" style="margin-top:44px">
-      <figure class="fig reveal"><div class="frame" style="--ar:4/3"><img src="../assets/img/robotic-arm/wrist.jpg" alt="CAD: wrist servo seated in its housing, horn bolted to the gripper" data-hint="CAD: wrist servo seated in its housing, horn bolted to the gripper" data-no="PL. 03" loading="lazy"></div><figcaption><b>PL. 03</b><span>Wrist joint: servo seated in its housing, horn bolted straight to the gripper jaw.</span></figcaption></figure>
-      <figure class="fig reveal"><div class="frame" style="--ar:4/3"><img src="../assets/img/robotic-arm/link-detail.jpg" alt="CAD: link end screwed directly to the servo horn" data-hint="CAD: link end screwed directly to the servo horn" data-no="PL. 04" loading="lazy"></div><figcaption><b>PL. 04</b><span>Link end screwed straight into the servo horn, no inserts needed.</span></figcaption></figure>
-      <figure class="fig reveal"><div class="frame" style="--ar:4/3"><img src="../assets/img/robotic-arm/leader-arm.jpg" alt="CAD: leader arm with handle and trigger" data-hint="CAD: leader arm with handle and trigger" data-no="PL. 05" loading="lazy"></div><figcaption><b>PL. 05</b><span>Leader arm: a handle and trigger replace the gripper so I can drive the follower by hand.</span></figcaption></figure>
-      <figure class="fig reveal"><div class="frame" style="--ar:4/3"><img src="../assets/img/robotic-arm/servo.jpg" alt="Photo: STS3215 servo + driver board" data-hint="Photo: STS3215 servo + driver board" data-no="PL. 06" loading="lazy"></div><figcaption><b>PL. 06</b><span>STS3215 smart servo with its serial driver board.</span></figcaption></figure>
+    <div class="gallery g4" style="margin-top:44px">
+      <figure class="fig reveal"><div class="frame" style="--ar:4/3"><img src="../assets/img/robotic-arm/hero.jpg" alt="CAD: follower arm, full assembly in SolidWorks" data-hint="CAD: follower arm, full assembly in SolidWorks" data-no="PL. 04" loading="lazy"></div><figcaption><b>PL. 04</b><span>Follower arm, full assembly in SolidWorks.</span></figcaption></figure>
+      <figure class="fig reveal"><div class="frame" style="--ar:4/3"><img src="../assets/img/robotic-arm/wrist.jpg" alt="CAD: wrist servo seated in its housing, horn bolted to the gripper" data-hint="CAD: wrist servo seated in its housing, horn bolted to the gripper" data-no="PL. 05" loading="lazy"></div><figcaption><b>PL. 05</b><span>Wrist joint: servo seated in its housing, horn bolted straight to the gripper jaw.</span></figcaption></figure>
+      <figure class="fig reveal"><div class="frame" style="--ar:4/3"><img src="../assets/img/robotic-arm/link-detail.jpg" alt="CAD: link end screwed directly to the servo horn" data-hint="CAD: link end screwed directly to the servo horn" data-no="PL. 06" loading="lazy"></div><figcaption><b>PL. 06</b><span>Link end screwed straight into the servo horn, no inserts needed.</span></figcaption></figure>
+      <figure class="fig reveal"><div class="frame" style="--ar:4/3"><img src="../assets/img/robotic-arm/leader-arm.jpg" alt="CAD: leader arm with handle and trigger" data-hint="CAD: leader arm with handle and trigger" data-no="PL. 07" loading="lazy"></div><figcaption><b>PL. 07</b><span>Leader arm: a handle and trigger replace the gripper so I can drive the follower by hand.</span></figcaption></figure>
+    </div>
+    <div class="gallery" style="margin-top:18px">
+      <figure class="fig reveal"><div class="frame" style="--ar:1/1"><img src="../assets/img/robotic-arm/follower-3q.jpg" alt="Photo: printed follower arm with its serrated two-jaw gripper" data-hint="Photo: printed follower arm with its serrated two-jaw gripper" data-no="PL. 08" loading="lazy"></div><figcaption><b>PL. 08</b><span>The printed follower. Every joint is a servo horn screwed straight into a link; the jaws are serrated for grip.</span></figcaption></figure>
+      <figure class="fig reveal"><div class="frame" style="--ar:1/1"><img src="../assets/img/robotic-arm/leader-built.jpg" alt="Photo: printed leader arm with its pistol-grip handle" data-hint="Photo: printed leader arm with its pistol-grip handle" data-no="PL. 09" loading="lazy"></div><figcaption><b>PL. 09</b><span>The printed leader. The handle sits where the gripper would be, so one hand drives all six joints.</span></figcaption></figure>
+      <figure class="fig reveal"><div class="frame" style="--ar:1/1"><img src="../assets/img/robotic-arm/servo.jpg" alt="Photo: arm C-clamped to the desk, servo wires running to a Waveshare bus servo adapter" data-hint="Photo: arm C-clamped to the desk, servo wires running to a Waveshare bus servo adapter" data-no="PL. 10" loading="lazy"></div><figcaption><b>PL. 10</b><span>C-clamped to the desk, with the daisy-chained servo bus running to a Waveshare serial bus adapter: one cable for all six STS3215s.</span></figcaption></figure>
     </div>
   </section>
 
@@ -153,13 +228,13 @@
         <h3 class="sec-num" style="margin-bottom:14px">// roadmap</h3>
         <ol class="steps">
           <li class="done"><span><b>Architecture &amp; components.</b> Servos, control approach, software stack.</span><span class="st">done</span></li>
-          <li class="now"><span><b>Full arm CAD in SolidWorks.</b></span><span class="st">now</span></li>
-          <li><span><b>Slice and print all parts</b>, fit-check servos and horn screws.</span><span class="st">next</span></li>
-          <li><span><b>Assign servo IDs</b> and validate the bus.</span><span class="st"></span></li>
-          <li><span><b>Stand up the environment</b> and integrate LeRobot.</span><span class="st"></span></li>
-          <li><span><b>Build a matching leader arm</b> for teleoperation.</span><span class="st"></span></li>
-          <li><span><b>Collect demonstrations</b> with cameras.</span><span class="st"></span></li>
-          <li><span><b>Train and evaluate</b> a first policy.</span><span class="st"></span></li>
+          <li class="done"><span><b>Full arm CAD in SolidWorks.</b></span><span class="st">done</span></li>
+          <li class="done"><span><b>Slice and print all parts</b>, fit-check servos and horn screws.</span><span class="st">done</span></li>
+          <li class="done"><span><b>Assign servo IDs</b> and validate the bus.</span><span class="st">done</span></li>
+          <li class="done"><span><b>Stand up the environment</b> and integrate LeRobot.</span><span class="st">done</span></li>
+          <li class="done"><span><b>Build a matching leader arm</b> for teleoperation.</span><span class="st">done</span></li>
+          <li class="now"><span><b>Collect demonstrations</b> with cameras.</span><span class="st">now</span></li>
+          <li><span><b>Train and evaluate</b> a first policy.</span><span class="st">next</span></li>
         </ol>
       </div>
     </div>
