@@ -55,7 +55,7 @@
     <div class="eyebrow fade-up"><span class="dot" aria-hidden="true"></span><span>Personal project · 2026 → · in progress</span><span class="rule" aria-hidden="true"></span></div>
     <h1><span class="ln"><span>A six-axis arm</span></span><span class="ln"><span>that learns by</span></span><span class="ln"><span><em class="s">watching.</em></span></span></h1>
     <p class="lede fade-up">A robotic arm designed entirely from scratch in SolidWorks, built around smart serial-bus servos so a hand-moved leader arm can drive it in real time. Those sessions become training data for an imitation-learning policy.</p>
-    <dl class="mini fade-up"><div><dt>Role</dt><dd>Sole designer, builder, integrator</dd></div><div><dt>Mechanical</dt><dd>SolidWorks, FDM printing</dd></div><div><dt>Actuation</dt><dd>6× Feetech STS3215</dd></div><div><dt>Software</dt><dd>Python · PyTorch · LeRobot · WSL2</dd></div></dl>
+    <dl class="mini fade-up"><div><dt>Role</dt><dd>Sole designer, builder, integrator</dd></div><div><dt>Mechanical</dt><dd>SolidWorks, PETG FDM printing</dd></div><div><dt>Actuation</dt><dd>6× Feetech STS3215</dd></div><div><dt>Software</dt><dd>Python · PyTorch · LeRobot · WSL2</dd></div></dl>
     <div class="ch-foot fade-up"><span class="hint"><span class="ptr">it reaches for your cursor · <kbd>click</kbd> grip · <kbd>hold</kbd> melt</span></span></div>
   </div>
 </section>
@@ -105,23 +105,21 @@
       <div class="reveal">
         <table class="kv">
           <tr><th>Degrees of freedom</th><td>6: base yaw, shoulder, elbow, wrist pitch, wrist roll, gripper</td></tr>
-          <tr><th>Base</th><td>120–150 mm diameter with a bolt-down flange for stability under fast leader moves</td></tr>
+          <tr><th>Base</th><td>130 mm, sized for stability under fast leader moves</td></tr>
           <tr><th>Upper arm</th><td>140 mm</td></tr>
           <tr><th>Forearm</th><td>110 mm, elbow to wrist</td></tr>
           <tr><th>Servo pocket</th><td>+0.3–0.5 mm total clearance; the 4 mm rear pivot boss bored to 4.2 mm for a snug pivot</td></tr>
           <tr><th>Fasteners</th><td>M3 throughout: links screw directly into the servo horns, 3.4 mm clearance holes in mating parts</td></tr>
           <tr><th>Aesthetic</th><td>White and electric blue, capsule links, cylindrical joint housings, exposed servo horns</td></tr>
-          <tr><th>Fabrication</th><td>FDM 3D printing (slicer selection pending)</td></tr>
+          <tr><th>Fabrication</th><td>FDM 3D printed in PETG, sliced in Bambu Studio</td></tr>
         </table>
       </div>
       <div class="prose reveal d1">
         <h3 style="margin-top:0">Servo choice was the key decision</h3>
         <p>I chose <b>Feetech STS3215</b> serial-bus servos (19 kg·cm, 7.4 V) over cheaper hobby servos because they report position back over the bus. That feedback is what makes native motion mirroring possible. A simpler servo like the LX-16A would need custom Python drivers and doesn't return position cleanly, which would make the teleoperation loop fragile before any learning happens.</p>
-        <p>I have NEMA 17 steppers on hand for base rotation, but steppers complicate LeRobot integration (no absolute position without extra encoders), so they're used sparingly or not at all.</p>
-        <h3>CAD problems solved along the way</h3>
+                <h3>A CAD problem solved along the way</h3>
         <ul>
           <li><b>Chamfer asymmetry on angled faces.</b> SolidWorks measured the chamfer along the tilted face normal rather than symmetrically. Fixed by redefining the chamfer references so both legs measured from the intended edges.</li>
-          <li><b>Floating assembly component.</b> An under-defined part drifted off-screen in the assembly. Diagnosed the missing mates and reinserted it with a fully defined mate set.</li>
         </ul>
       </div>
     </div>
@@ -168,12 +166,12 @@
   </section>
 
   <section class="chapter" data-form="3" data-morph="progress" data-align="right" data-focal="2.45" data-mat="0" data-nav="builds"
-    data-fig="NEXT" data-name="3-Axis Mini CNC" data-note="personal · complete" style="min-height:170vh">
+    data-fig="NEXT" data-name="3-Axis Mini CNC" data-note="course project · complete" style="min-height:170vh">
     <div class="stick">
       <div class="copy">
         <div class="ch-kicker reveal"><span>next build</span><span class="st">the metal is already remembering it</span></div>
         <h2 class="ch-title reveal">Keep <em class="s">going.</em></h2>
-        <div class="cards" style="margin-top:30px"><a class="card reveal" href="mini-cnc.html"><span class="swatch sw0 has-img" style="background-image:url(../assets/img/thumbs/mini-cnc.jpg)"><b>03</b></span><span class="tag">personal · complete</span><h3>3-Axis Mini CNC</h3><p>Lead screws, GRBL and a printed spindle mount. Where the motion work started.</p><svg class="arrow" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 12L12 4M5 4h7v7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></a><a class="card reveal" href="tp1-enclosure.html"><span class="swatch sw2 has-img" style="background-image:url(../assets/img/thumbs/tp1-enclosure.jpg)"><b>04</b></span><span class="tag">ZMicro · summer 2026</span><h3>Split-Shell Enclosure</h3><p>A sheet-metal seam that holds itself together under MIL-STD shock.</p><svg class="arrow" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 12L12 4M5 4h7v7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></a></div>
+        <div class="cards" style="margin-top:30px"><a class="card reveal" href="mini-cnc.html"><span class="swatch sw0 has-img" style="background-image:url(../assets/img/thumbs/mini-cnc.jpg)"><b>03</b></span><span class="tag">course project · complete</span><h3>3-Axis Mini CNC</h3><p>Lead screws, GRBL and a printed spindle mount. Where the motion work started.</p><svg class="arrow" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 12L12 4M5 4h7v7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></a><a class="card reveal" href="tp1-enclosure.html"><span class="swatch sw2 has-img" style="background-image:url(../assets/img/thumbs/tp1-enclosure.jpg)"><b>04</b></span><span class="tag">ZMicro · summer 2026</span><h3>Split-Shell Enclosure</h3><p>A sheet-metal seam that holds itself together under MIL-STD shock.</p><svg class="arrow" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 12L12 4M5 4h7v7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></a></div>
       </div>
     </div>
   </section>

@@ -52,10 +52,10 @@
   data-fig="FIG. 03" data-name="3-axis mini CNC · live sketch" data-note="Arduino · GRBL · G-code">
   <div class="copy">
     <a class="back" href="../index.html#builds">← all builds</a>
-    <div class="eyebrow fade-up"><span class="dot" aria-hidden="true"></span><span>Personal project · complete</span><span class="rule" aria-hidden="true"></span></div>
+    <div class="eyebrow fade-up"><span class="dot" aria-hidden="true"></span><span>Team course project · complete</span><span class="rule" aria-hidden="true"></span></div>
     <h1><span class="ln"><span>A mini CNC,</span></span><span class="ln"><span>wired and tuned</span></span><span class="ln"><span><b>by hand.</b></span></span></h1>
     <p class="lede fade-up">A three-axis motion platform with a rotary spindle: lead screws and bearings on every axis, a wood frame, a custom printed spindle mount, and an Arduino running GRBL to turn G-code into coordinated motion. The stepping stone to the arm.</p>
-    <dl class="mini fade-up"><div><dt>Role</dt><dd>Designer, fabricator, wiring & firmware</dd></div><div><dt>Motion</dt><dd>3 axes on lead screws + bearings</dd></div><div><dt>Control</dt><dd>Arduino + GRBL, G-code</dd></div><div><dt>Fab</dt><dd>Wood frame, printed spindle mount</dd></div></dl>
+    <dl class="mini fade-up"><div><dt>Role</dt><dd>Design, all wiring &amp; soldering, GRBL</dd></div><div><dt>Budget</dt><dd>Under $200</dd></div><div><dt>Motion</dt><dd>3 axes on lead screws + bearings</dd></div><div><dt>Control</dt><dd>Arduino + GRBL, G-code</dd></div><div><dt>Fab</dt><dd>Wood frame, printed spindle mount</dd></div></dl>
     <div class="ch-foot fade-up"><span class="hint"><span class="ptr">your cursor jogs X / Y · <kbd>click</kbd> plunge · <kbd>hold</kbd> melt</span></span></div>
   </div>
 </section>
@@ -78,7 +78,7 @@
   <section class="panel plate-solid" data-form="0" data-align="center" data-dim="1" data-mat="0" >
     <div class="sec-head reveal">
       <span class="sec-num">§ 01 / build</span>
-      <div><h2 class="sec-title">The whole stack, <b>by hand.</b></h2><p class="sec-lead">I wanted to understand multi-axis motion control by building all of it myself: the mechanics that move, the electronics that drive them, and the firmware that coordinates them. Nothing came from a kit.</p></div>
+      <div><h2 class="sec-title">The whole stack, <b>by hand.</b></h2><p class="sec-lead">I wanted to understand multi-axis motion control by building all of it myself: the mechanics that move, the electronics that drive them, and the firmware that coordinates them. Nothing came from a kit.</p><p class="sec-lead">A team course project with a hard <b>$200 budget</b>. I did the design, all of the wiring and soldering, and the GRBL setup; my teammates wrote the report.</p></div>
     </div>
     
     <div class="two">
@@ -91,7 +91,9 @@
         </ul>
         <h2>Electronics &amp; control</h2>
         <ul>
-          <li><b>Arduino-based controller</b> wired by hand to the stepper drivers and motors.</li>
+          <li><b>Full bill of materials</b> written and sourced by me before anything was ordered.</li>
+          <li><b>Arduino with a CNC Shield V3</b> and three A4988 stepper drivers, one per axis, wired by hand to three NEMA 17 steppers. The 12 V supply feeds the shield.</li>
+          <li><b>775 DC spindle</b> (12–24 V, 10–20k RPM no-load) with a drill chuck, speed set by a 10 A PWM motor controller.</li>
           <li><b>GRBL firmware</b> configured for the machine: steps per mm, axis limits, feed rates, acceleration.</li>
           <li><b>G-code</b> streamed to the controller to run coordinated 3-axis toolpaths.</li>
         </ul>
@@ -105,7 +107,48 @@
 
   <section class="panel plate-solid" data-form="0" data-align="center" data-dim="1" data-mat="0" >
     <div class="sec-head reveal">
-      <span class="sec-num">§ 02 / lessons</span>
+      <span class="sec-num">§ 02 / final test</span>
+      <div><h2 class="sec-title">Holes called out <b>on the spot.</b></h2><p class="sec-lead">The final test had no rehearsal. A foam block was fixed to the bed, and our professor called out each hole live: diameter, depth, and X/Y position. The machine had to cut it.</p></div>
+    </div>
+    <div class="two">
+      <div class="prose reveal">
+        <ol class="steps">
+          <li><span><b>Fix the stock.</b> I designed and printed a tray that holds the foam on the bed, so the spindle can't drag it out of position mid-cut.</span><span class="st">setup</span></li>
+          <li><span><b>Home to a known zero.</b> I homed every axis against the endstops so one corner of the foam was (0, 0, 0). Every called-out position was measured from there.</span><span class="st">homing</span></li>
+          <li><span><b>Bit-size holes: plunge.</b> The bit was 3/8 in, the smallest hole he could ask for. For those, GRBL moves to X/Y and plunges straight down to the called depth.</span><span class="st">g-code</span></li>
+          <li><span><b>Bigger holes: plunge, then circle out.</b> For anything larger, I wrote G-code that plunges to depth and then runs circular passes, stepping outward until the hole reaches the called diameter.</span><span class="st">g-code</span></li>
+        </ol>
+      </div>
+      <div class="prose reveal d1">
+        <div class="callout"><b>Why it's a good test.</b> A called-out hole checks the whole chain at once: rigid stock, correct homing, calibrated steps per mm on all three axes, and G-code that turns a spec into a toolpath. If any link is off, the hole lands in the wrong place or at the wrong size.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel plate-solid" data-form="0" data-align="center" data-dim="1" data-mat="0" >
+    <div class="sec-head reveal">
+      <span class="sec-num">§ 03 / debugging</span>
+      <div><h2 class="sec-title">The spindle that <b>wouldn't listen.</b></h2><p class="sec-lead">Getting three axes moving was the easy part. Getting GRBL to control the spindle took a full round of hypothesis, measurement and one wrong answer.</p></div>
+    </div>
+    <div class="two">
+      <div class="prose reveal">
+        <ol class="steps">
+          <li><span><b>The symptom.</b> The spindle ran through a MOSFET switch module (I did all the soldering on the build, including its header pins), but GRBL's spindle-speed commands did nothing.</span><span class="st">problem</span></li>
+          <li><span><b>First hypothesis: wrong pin.</b> GRBL 0.9 and 1.1 swap the spindle-enable and Z-limit pins on the CNC Shield, and we didn't know which version our shield was laid out for.</span><span class="st">guess</span></li>
+          <li><span><b>Measure, don't guess.</b> I commanded half and full spindle power in GRBL and probed the shield with a multimeter. The pin that swung between about 2.5 V and 5 V with the command was the real spindle output.</span><span class="st">test</span></li>
+          <li><span><b>Right pin, still dead.</b> The wiring was correct, so the fault was the part. The budget MOSFET module, despite its current rating, burned out the first time it saw full spindle power.</span><span class="st">root cause</span></li>
+          <li class="done"><span><b>The fix.</b> Swapped the MOSFET for a 10 A PWM DC motor speed controller (12–40 V). Spindle speed is now set by its knob instead of from G-code, a trade I accepted to get a reliable machine.</span><span class="st">solved</span></li>
+        </ol>
+      </div>
+      <div class="prose reveal d1">
+        <div class="callout"><b>What I took from it.</b> Two things. First, measure the signal before rewiring: one multimeter check settled the pin question that had stalled us. Second, a rating on a cheap power component isn't a guarantee. I now derate budget parts and test them at full load before trusting them in a build.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel plate-solid" data-form="0" data-align="center" data-dim="1" data-mat="0" >
+    <div class="sec-head reveal">
+      <span class="sec-num">§ 04 / lessons</span>
       <div><h2 class="sec-title">Skills that <b>carried forward.</b></h2></div>
     </div>
     
@@ -117,7 +160,7 @@
     <div class="gallery g4" style="margin-top:44px">
       <figure class="fig reveal"><div class="frame" style="--ar:4/5"><img src="../assets/img/mini-cnc/build-1.jpg" alt="Photo: frame and Z axis mid-assembly, power supply and drivers on the bench" data-hint="Photo: frame and Z axis mid-assembly, power supply and drivers on the bench" data-no="PL. 03" loading="lazy"></div><figcaption><b>PL. 03</b><span>Mid-build: Z axis on its lead screw, drivers and the 12 V supply wired up on the bench.</span></figcaption></figure>
       <figure class="fig reveal"><div class="frame" style="--ar:4/5"><img src="../assets/img/mini-cnc/wiring.jpg" alt="Photo: Arduino CNC shield with stepper drivers and heatsinks" data-hint="Photo: Arduino CNC shield with stepper drivers and heatsinks" data-no="PL. 04" loading="lazy"></div><figcaption><b>PL. 04</b><span>CNC shield on the Arduino: one stepper driver per axis, heatsinked, current set by trimpot.</span></figcaption></figure>
-      <figure class="fig reveal"><div class="frame" style="--ar:4/5"><img src="../assets/img/mini-cnc/mosfet.jpg" alt="Photo: dual-MOSFET switch module wired for the spindle" data-hint="Photo: dual-MOSFET switch module wired for the spindle" data-no="PL. 05" loading="lazy"></div><figcaption><b>PL. 05</b><span>MOSFET switch board: lets the controller's low-current signal switch the spindle's 12 V supply.</span></figcaption></figure>
+      <figure class="fig reveal"><div class="frame" style="--ar:4/5"><img src="../assets/img/mini-cnc/mosfet.jpg" alt="Photo: dual-MOSFET switch module wired for the spindle" data-hint="Photo: dual-MOSFET switch module wired for the spindle" data-no="PL. 05" loading="lazy"></div><figcaption><b>PL. 05</b><span>The MOSFET module we first used to switch the spindle. It burned out at full power and was replaced by a PWM speed controller.</span></figcaption></figure>
       <figure class="fig reveal"><div class="frame" style="--ar:4/5"><img src="../assets/img/mini-cnc/endstop.jpg" alt="Photo: mechanical endstop switch board" data-hint="Photo: mechanical endstop switch board" data-no="PL. 06" loading="lazy"></div><figcaption><b>PL. 06</b><span>Mechanical endstop for homing. One per axis so GRBL knows where zero is.</span></figcaption></figure>
       <figure class="fig reveal"><div class="frame" style="--ar:4/5"><img src="../assets/img/mini-cnc/psu.jpg" alt="Photo: mains wiring landed on the power supply's L, N and earth terminals" data-hint="Photo: mains wiring landed on the power supply's L, N and earth terminals" data-no="PL. 07" loading="lazy"></div><figcaption><b>PL. 07</b><span>Mains side of the 12 V supply: line, neutral and earth each on their own terminal.</span></figcaption></figure>
       <figure class="fig reveal"><div class="frame" style="--ar:4/5"><img src="../assets/img/mini-cnc/assembled.jpg" alt="Photo: assembled machine, printed Z carriage and DC spindle" data-hint="Photo: assembled machine, printed Z carriage and DC spindle" data-no="PL. 08" loading="lazy"></div><figcaption><b>PL. 08</b><span>Assembled: printed Z carriage, DC spindle with drill chuck, Y axis in the base drawer.</span></figcaption></figure>
